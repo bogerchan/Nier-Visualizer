@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3c3b45</color>
+    <color name="colorPrimaryDark">#25242b</color>
+    <color name="colorAccent">#a7ffffff</color>
+    <color name="colorCardStart">#25242b</color>
+    <color name="colorCardEnd">#bb25242b</color>
+    <color name="colorText">#b0b8aa</color>
+    <color name="colorTitleStart">#bb25242b</color>
+    <color name="colorTitleCenter">#25242b</color>
+    <color name="colorTitleEnd">#bb25242b</color>
+    <color name="colorRipple">#01a8ae</color>
+</resources>

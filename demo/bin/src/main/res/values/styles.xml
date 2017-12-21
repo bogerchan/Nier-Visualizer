@@ -1,0 +1,24 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.Text">
+        <item name="android:textColor">@color/colorText</item>
+        <item name="android:gravity">center_vertical|left</item>
+    </style>
+
+    <style name="AppTheme.Text.Center" parent="AppTheme.Text">
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="AppTheme.Text.Right" parent="AppTheme.Text">
+        <item name="android:gravity">right|center_vertical</item>
+    </style>
+
+</resources>
