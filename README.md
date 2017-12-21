@@ -2,7 +2,7 @@
 
 #### Language Switch: [English](README.md) / [中文](README-zh.md)
 
-# 1. Nier Visualizer
+# 1. Nier Visualizer [![](https://jitpack.io/v/bogerchan/Nier-Visualizer.svg)](https://jitpack.io/#bogerchan/Nier-Visualizer)
 
 Nier Visualizer is a lightweight and efficient Android visual library written in pure Kotlin.It has an independent rendering thread, compatible with most of the equipment on the market. Nier Visualizer is ideal for audio visualization applications such as music players, recorder, live wallpaper and more.
 
@@ -38,7 +38,7 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.User:Repo:Tag'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.1'
 	}
 ```
 
