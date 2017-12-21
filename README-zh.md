@@ -2,7 +2,7 @@
 
 #### 语言切换: [English](README.md) / [中文](README-zh.md)
 
-# 1. Nier Visualizer [![](https://jitpack.io/v/bogerchan/Nier-Visualizer.svg)](https://jitpack.io/#bogerchan/Nier-Visualizer)
+# 1. Nier Visualizer ![](https://jitpack.io/v/bogerchan/Nier-Visualizer.svg)
 
 Nier Visualizer 是一款纯 Kotlin 编写的轻量高效的 Android 可视化库。采用独立渲染线程，兼容绝大部分设备。适用于音频可视化的应用场景，如音乐播放器、录音应用、动态壁纸等。
 
