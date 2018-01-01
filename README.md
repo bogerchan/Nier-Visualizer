@@ -112,7 +112,7 @@ visualizerManager.stop();
 
 # 5. Thanks
 
-Ported some of the [android-visualizer](https://github.com/felixpalmer/android-visualizer) visual effects, thanks to `felixpalmer`!
+Ported some of the [android-visualizer](https://github.com/felixpalmer/android-visualizer) ,visual effects, thanks to `felixpalmer`!
 
 # 6. Protocol
 
