@@ -15,16 +15,16 @@ import me.bogerchan.niervisualizer.util.NierAnimator
  *
  * Created by BogerChan on 2017/12/9.
  */
-class CircleBarRenderer(
+class CircleWaveRenderer(
         private val paint: Paint = getDefaultPaint(),
-        private val divisions: Int = 4,
+        private val divisions: Int = 2,
         private val type: Type = Type.TYPE_A,
         private val modulationStrength: Float = 0.4f,
         private val amplification: Float = 1f,
         private val animator: NierAnimator = getDefaultAnimator()) : IRenderer {
 
     enum class Type {
-        TYPE_A, TYPE_B, TYPE_A_AND_TYPE_B
+        TYPE_A, TYPE_B
     }
 
     private var mAggresive = 0.4f
@@ -35,7 +35,7 @@ class CircleBarRenderer(
 
     companion object {
         private fun getDefaultPaint() = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            strokeWidth = 8f
+            strokeWidth = 4f
             color = Color.parseColor("#e6ebfe")
         }
 
@@ -58,7 +58,6 @@ class CircleBarRenderer(
             mLastDrawArea.set(drawArea)
         }
         val drawHeight = drawArea.height()
-
         for (i in 0 until data.size / divisions) {
             // Calculate dbValue
             val rfk = data[divisions * i]
@@ -67,19 +66,23 @@ class CircleBarRenderer(
             val dbValue = (75 * Math.log10(magnitude.toDouble()).toFloat() * amplification)
                     .let { if (it < 20f) 20f else it }
             val cartPoint = when (type) {
-                Type.TYPE_A -> floatArrayOf((i * divisions).toFloat() / (data.size - 1), drawHeight / 2f)
+                Type.TYPE_A -> floatArrayOf((i * divisions).toFloat() / (data.size - 1), drawHeight / 2f + dbValue)
                 Type.TYPE_B -> floatArrayOf((i * divisions).toFloat() / (data.size - 1), drawHeight / 2f - dbValue)
-                Type.TYPE_A_AND_TYPE_B -> floatArrayOf((i * divisions).toFloat() / (data.size - 1), drawHeight / 2f - dbValue)
             }
 
             val polarPoint = toPolar(cartPoint, drawArea)
             mFFTPoints[i * 4] = polarPoint[0]
             mFFTPoints[i * 4 + 1] = polarPoint[1]
 
+            val rfk2 = data[divisions * (i + 1) % data.size]
+            val ifk2 = data[(divisions * (i + 1) + 1) % data.size]
+            val magnitude2 = (rfk2 * rfk2 + ifk2 * ifk2).toFloat()
+            val dbValue2 = (75 * Math.log10(magnitude2.toDouble()).toFloat() * amplification)
+                    .let { if (it < 20f) 20f else it }
+
             val cartPoint2 = when (type) {
-                Type.TYPE_A -> floatArrayOf((i * divisions).toFloat() / (data.size - 1), drawHeight / 2f + dbValue)
-                Type.TYPE_B -> floatArrayOf((i * divisions).toFloat() / (data.size - 1), drawHeight / 2f)
-                Type.TYPE_A_AND_TYPE_B -> floatArrayOf((i * divisions).toFloat() / (data.size - 1), drawHeight / 2f + dbValue)
+                Type.TYPE_A -> floatArrayOf(((i + 1) * divisions).toFloat() / (data.size - 1) % 1f, drawHeight / 2f + dbValue2)
+                Type.TYPE_B -> floatArrayOf(((i + 1) * divisions).toFloat() / (data.size - 1) % 1f, drawHeight / 2f - dbValue2)
             }
 
             val polarPoint2 = toPolar(cartPoint2, drawArea)
