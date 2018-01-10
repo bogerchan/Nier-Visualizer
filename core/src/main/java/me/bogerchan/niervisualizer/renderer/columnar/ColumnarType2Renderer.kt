@@ -33,10 +33,10 @@ class ColumnarType2Renderer : IRenderer {
     }
 
     override fun onStart(captureSize: Int) {
-        mRenderColumns = Array(Math.min(36, captureSize),
+        mRenderColumns = Array(Math.min(48, captureSize),
                 { _ -> RectF(0F, -5F, 0F, 5F) })
         mScaleAnimator = NierAnimator()
-        mScaleAnimator.values = floatArrayOf(1F, 1.5F, 1F)
+        mScaleAnimator.values = floatArrayOf(1F, 1.2F, 1F)
         mScaleAnimator.interpolator = BounceInterpolator()
         mRotateAnimator = NierAnimator()
         mRotateAnimator.interpolator = AccelerateDecelerateInterpolator()

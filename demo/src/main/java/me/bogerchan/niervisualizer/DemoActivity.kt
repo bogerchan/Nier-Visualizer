@@ -2,6 +2,8 @@ package me.bogerchan.niervisualizer
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Bundle
@@ -12,14 +14,13 @@ import android.support.v4.content.res.ResourcesCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.SurfaceView
 import android.view.View
+import android.view.animation.LinearInterpolator
 import android.widget.TextView
 import me.bogerchan.niervisualizer.renderer.IRenderer
 import me.bogerchan.niervisualizer.renderer.circle.CircleBarRenderer
-import me.bogerchan.niervisualizer.renderer.circle.CircleRenderer
-import me.bogerchan.niervisualizer.renderer.columnar.ColumnarType1Renderer
-import me.bogerchan.niervisualizer.renderer.columnar.ColumnarType2Renderer
-import me.bogerchan.niervisualizer.renderer.columnar.ColumnarType3Renderer
-import me.bogerchan.niervisualizer.renderer.line.LineRenderer
+import me.bogerchan.niervisualizer.renderer.circle.CircleWaveRenderer
+import me.bogerchan.niervisualizer.renderer.other.ArcStaticRenderer
+import me.bogerchan.niervisualizer.util.NierAnimator
 
 /**
  * Created by BogerChan on 2017/12/2.
@@ -34,14 +35,79 @@ class DemoActivity : AppCompatActivity() {
     private val svWave by lazy { findViewById<SurfaceView>(R.id.sv_wave) }
     private var mVisualizerManager: NierVisualizerManager? = null
     private val tvChangeStyle by lazy { findViewById<TextView>(R.id.tv_change_style) }
-    private val mRenderers = arrayOf<Array<IRenderer>>(arrayOf(ColumnarType1Renderer()),
-            arrayOf(ColumnarType2Renderer()),
-            arrayOf(ColumnarType3Renderer()),
-            arrayOf(LineRenderer(true)),
-            arrayOf(CircleBarRenderer(2, true)),
-            arrayOf(CircleRenderer(true)),
-            arrayOf(CircleRenderer(true), CircleBarRenderer(2, true), ColumnarType2Renderer()),
-            arrayOf(CircleRenderer(true), CircleBarRenderer(2, true), LineRenderer(true)))
+    private val mRenderers = arrayOf<Array<IRenderer>>(
+//            arrayOf(ColumnarType1Renderer()),
+//            arrayOf(ColumnarType2Renderer()),
+//            arrayOf(ColumnarType3Renderer()),
+//            arrayOf(ColumnarType4Renderer()),
+//            arrayOf(LineRenderer(true)),
+//            arrayOf(CircleBarRenderer()),
+//            arrayOf(CircleRenderer(true)),
+//            arrayOf(CircleRenderer(true),
+//                    CircleBarRenderer(),
+//                    ColumnarType4Renderer()),
+//            arrayOf(CircleRenderer(true), CircleBarRenderer(), LineRenderer(true)),
+            arrayOf(ArcStaticRenderer(
+                    paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                        color = Color.parseColor("#cfa9d0fd")
+                    }),
+                    ArcStaticRenderer(
+                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                                color = Color.parseColor("#dad2eafe")
+                            },
+                            amplificationOuter = .83f,
+                            startAngle = -90f,
+                            sweepAngle = 225f),
+                    ArcStaticRenderer(
+                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                                color = Color.parseColor("#7fa9d0fd")
+                            },
+                            amplificationOuter = .93f,
+                            amplificationInner = 0.8f,
+                            startAngle = -45f,
+                            sweepAngle = 135f),
+                    CircleBarRenderer(
+                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                                strokeWidth = 4f
+                                color = Color.parseColor("#efe3f2ff")
+                            },
+                            modulationStrength = 1f,
+                            type = CircleBarRenderer.Type.TYPE_A_AND_TYPE_B,
+                            amplification = 1f, divisions = 8),
+                    CircleBarRenderer(
+                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                                strokeWidth = 5f
+                                color = Color.parseColor("#e3f2ff")
+                            },
+                            modulationStrength = 0.1f,
+                            amplification = 1.2f,
+                            divisions = 8),
+                    CircleWaveRenderer(
+                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                                strokeWidth = 6f
+                                color = Color.WHITE
+                            },
+                            modulationStrength = 0.2f,
+                            type = CircleWaveRenderer.Type.TYPE_B,
+                            amplification = 1f,
+                            animator = NierAnimator(
+                                    interpolator = LinearInterpolator(),
+                                    duration = 20000,
+                                    values = floatArrayOf(0f, -360f))),
+                    CircleWaveRenderer(
+                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                                strokeWidth = 6f
+                                color = Color.parseColor("#7fcee7fe")
+                            },
+                            modulationStrength = 0.2f,
+                            type = CircleWaveRenderer.Type.TYPE_B,
+                            amplification = 1f,
+                            divisions = 8,
+                            animator = NierAnimator(
+                                    interpolator = LinearInterpolator(),
+                                    duration = 20000,
+                                    values = floatArrayOf(0f, -360f))))
+    )
     private var mCurrentStyleIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
