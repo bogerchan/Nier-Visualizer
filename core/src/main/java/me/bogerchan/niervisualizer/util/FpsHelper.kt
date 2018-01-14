@@ -56,7 +56,7 @@ class FpsHelper {
         mLastTrackTime = curTime
         mFps ++
         if (curTime - mLastSampleTime > 1000L) {
-            Log.d(NierConstants.TAG, "current fps: " + (1000.0 / (curTime - mLastSampleTime) * mFps).toInt())
+            Log.d(NierConstants.TAG, "current fps: ${(1000.0 / (curTime - mLastSampleTime) * mFps).toInt()}")
             mFps = 0
             mLastSampleTime = curTime
         }

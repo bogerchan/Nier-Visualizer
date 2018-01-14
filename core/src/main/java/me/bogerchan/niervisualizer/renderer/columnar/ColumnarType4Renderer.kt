@@ -6,7 +6,7 @@ import me.bogerchan.niervisualizer.renderer.IRenderer
 /**
  * Created by BogerChan on 2017/11/26.
  */
-class ColumnarType3Renderer : IRenderer {
+class ColumnarType4Renderer : IRenderer {
 
     private val mPaint: Paint
     private val mLastDrawArea = Rect()
@@ -14,8 +14,6 @@ class ColumnarType3Renderer : IRenderer {
     // per column' width equals to twice of gap
     private val mGapRatio = 0.7F
     private val mRadius = 10F
-    private var mHalfHeight = 0F
-    private var mColorCounter = 0.0
 
     constructor(paint: Paint) {
         mPaint = paint
@@ -27,8 +25,8 @@ class ColumnarType3Renderer : IRenderer {
     }
 
     override fun onStart(captureSize: Int) {
-        mRenderColumns = Array(Math.min(40, captureSize),
-                { _ -> RectF(0F, -5F, 0F, 5F) })
+        mRenderColumns = Array(Math.min(36, captureSize),
+                { _ -> RectF(0F, -5F, 0F, 0F) })
         mLastDrawArea.set(0, 0, 0, 0)
     }
 
@@ -36,7 +34,7 @@ class ColumnarType3Renderer : IRenderer {
 
     }
 
-    override fun getInputDataType() = IRenderer.DataType.WAVE
+    override fun getInputDataType() = IRenderer.DataType.FFT
 
     override fun calculate(drawArea: Rect, data: ByteArray) {
         if (drawArea != mLastDrawArea) {
@@ -46,43 +44,26 @@ class ColumnarType3Renderer : IRenderer {
         updateWave(data)
     }
 
-    private fun transformWaveValue(value: Byte, rectF: RectF) {
-        rectF.bottom = ((value.toInt() and 0xFF).toFloat() - 128F) / 128F * mHalfHeight
-        rectF.bottom = if (rectF.bottom == 0F) 5F else rectF.bottom
-        rectF.top = -rectF.bottom
-    }
-
     private fun updateWave(data: ByteArray) {
-        if (mRenderColumns.size >= data.size) {
-            data.forEachIndexed { index, byte ->
-                transformWaveValue(byte, mRenderColumns[index])
-            }
-        } else {
-            val step = data.size / mRenderColumns.size
-            mRenderColumns.forEachIndexed { index, rectF ->
-                transformWaveValue(data[index * step], rectF)
-            }
+        for (i in 0 until Math.min(data.size / 2, mRenderColumns.size)) {
+            // Calculate dbValue
+            val rfk = data[i]
+            val ifk = data[i + 1]
+            val magnitude = (rfk * rfk + ifk * ifk).toFloat()
+            val dbValue = 75 * Math.log10(magnitude.toDouble()).toFloat()
+            val rectF = mRenderColumns[i]
+            rectF.top = -dbValue
+            rectF.top = if (rectF.top > -5F) -5F else rectF.top
         }
-        cycleColor()
     }
 
     private fun calculateRenderData(drawArea: Rect) {
-        mHalfHeight = drawArea.height() / 3F
         val perGap = drawArea.width().toFloat() / (mRenderColumns.size * (mGapRatio + 1) + 1)
         mRenderColumns.forEachIndexed { index, rect ->
             rect.left = ((index + 1) * (1 + mGapRatio) - mGapRatio) * perGap
             rect.right = rect.left + mGapRatio * perGap
         }
     }
-
-    private fun cycleColor() {
-        val r = Math.floor(128 * (Math.sin(mColorCounter) + 1)).toInt()
-        val g = Math.floor(128 * (Math.sin(mColorCounter + 2) + 1)).toInt()
-        val b = Math.floor(128 * (Math.sin(mColorCounter + 4) + 1)).toInt()
-        mPaint.color = Color.argb(128, r, g, b)
-        mColorCounter += 0.03
-    }
-
 
     override fun render(canvas: Canvas) {
         canvas.save()

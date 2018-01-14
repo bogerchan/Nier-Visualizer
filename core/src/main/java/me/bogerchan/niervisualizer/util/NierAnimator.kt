@@ -7,17 +7,10 @@ import android.view.animation.LinearInterpolator
 /**
  * Created by BogerChan on 2017/12/3.
  */
-class NierAnimator {
+class NierAnimator(var interpolator: TimeInterpolator = LinearInterpolator(),
+                   var duration: Int = 2000,
+                   var values: FloatArray = floatArrayOf(1F)) {
 
-    companion object {
-        val DEFAULT_INTERPOLATOR = LinearInterpolator()
-        val DEFAULT_DURATION = 2000
-        val DEFAULT_VALUES = floatArrayOf(1F, 1.2F, 1.1F, 1F)
-    }
-
-    var interpolator: TimeInterpolator = DEFAULT_INTERPOLATOR
-    var duration = DEFAULT_DURATION
-    var values = DEFAULT_VALUES
     private var mFraction = 0F
     private var mLastRecordTime = 0L
     private var isRunning = false

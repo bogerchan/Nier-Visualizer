@@ -52,7 +52,7 @@ class NierVisualizerManager {
     fun init(audioSession: Int) {
         synchronized(mStateBlock) {
             val visualizer = Visualizer(audioSession)
-            visualizer.captureSize = 128
+            visualizer.captureSize = 512
             visualizer.scalingMode = Visualizer.SCALING_MODE_NORMALIZED
             visualizer.measurementMode = Visualizer.MEASUREMENT_MODE_NONE
             visualizer.setDataCaptureListener(mDataCaptureListener, Visualizer.getMaxCaptureRate(), true, true)

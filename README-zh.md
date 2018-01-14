@@ -13,11 +13,13 @@ Nier Visualizer 是一款纯 Kotlin 编写的轻量高效的 Android 可视化�
 ||||
 |---|---|---|
 |![ColumnarType1Renderer](doc/img/renderer1.gif)|![ColumnarType2Renderer](doc/img/renderer2.gif)|![ColumnarType3Renderer](doc/img/renderer3.gif)|
-|ColumnarType1Renderer|ColumnarType2Renderer|ColumnarType3Renderer|
-|![LineRenderer](doc/img/renderer4.gif)|![CircleBarRenderer](doc/img/renderer5.gif)|![CircleRenderer](doc/img/renderer6.gif)|
-|LineRenderer|CircleBarRenderer|CircleRenderer|
-|![复合效果1](doc/img/renderer7.gif)|![复合效果2](doc/img/renderer8.gif)| star 关注后续更新...|
-|复合效果1|复合效果2|开发中...|
+| ColumnarType1Renderer | ColumnarType2Renderer | ColumnarType3Renderer |
+|![ColumnarType4Renderer(FFT)](doc/img/renderer4.gif)|![LineRenderer](doc/img/renderer5.gif)|![CircleBarRenderer](doc/img/renderer6.gif)|
+| ColumnarType4Renderer(FFT) | LineRenderer | CircleBarRenderer |
+|![CircleRenderer](doc/img/renderer7.gif)|![Compound effect 1](doc/img/renderer8.gif)|![Compound effect 2](doc/img/renderer9.gif)|
+| CircleRenderer | 复合效果 1 | 复合效果 2 |
+|![Compound effect 3](doc/img/renderer10.gif)| Star 本项目跟踪后续更新 |
+| 复合效果 3 | 即将到来 |
 
 # 3. 如何接入
 
@@ -38,7 +40,7 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.1'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.2'
 	}
 ```
 
@@ -112,7 +114,7 @@ visualizerManager.stop();
 
 # 5. 致谢
 
-部分效果参考 [android-visualizer](https://github.com/felixpalmer/android-visualizer)，感谢 `felixpalmer`！
+部分效果参考 [android-visualizer](https://github.com/felixpalmer/android-visualizer)，感谢 `felixpalmer`！
 
 # 6. 开放协议
 

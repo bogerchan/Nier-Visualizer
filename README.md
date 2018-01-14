@@ -13,11 +13,13 @@ Nier Visualizer is a lightweight and efficient Android visual library written in
 ||||
 |---|---|---|
 |![ColumnarType1Renderer](doc/img/renderer1.gif)|![ColumnarType2Renderer](doc/img/renderer2.gif)|![ColumnarType3Renderer](doc/img/renderer3.gif)|
-|ColumnarType1Renderer|ColumnarType2Renderer|ColumnarType3Renderer|
-|![LineRenderer](doc/img/renderer4.gif)|![CircleBarRenderer](doc/img/renderer5.gif)|![CircleRenderer](doc/img/renderer6.gif)|
-|LineRenderer|CircleBarRenderer|CircleRenderer|
-|![Compound effect 1](doc/img/renderer7.gif)|![Compound effect 2](doc/img/renderer8.gif)|Star to see more|
-|Compound effect 1|Compound effect2|Developing...|
+| ColumnarType1Renderer | ColumnarType2Renderer | ColumnarType3Renderer |
+|![ColumnarType4Renderer(FFT)](doc/img/renderer4.gif)|![LineRenderer](doc/img/renderer5.gif)|![CircleBarRenderer](doc/img/renderer6.gif)|
+| ColumnarType4Renderer(FFT) | LineRenderer | CircleBarRenderer |
+|![CircleRenderer](doc/img/renderer7.gif)|![Compound effect 1](doc/img/renderer8.gif)|![Compound effect 2](doc/img/renderer9.gif)|
+| CircleRenderer | Compound effect1 | Compound effect 2 |
+|![Compound effect 3](doc/img/renderer10.gif)| Star this project to see more |
+| Compound effect 3 | Coming soon |
 
 # 3. How to
 
@@ -38,7 +40,7 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.1'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.2'
 	}
 ```
 
@@ -112,7 +114,7 @@ visualizerManager.stop();
 
 # 5. Thanks
 
-Ported some of the [android-visualizer](https://github.com/felixpalmer/android-visualizer) visual effects, thanks to `felixpalmer`!
+Ported some of the [android-visualizer](https://github.com/felixpalmer/android-visualizer),visual effects, thanks to `felixpalmer`!
 
 # 6. Protocol
 

@@ -33,10 +33,10 @@ class ColumnarType2Renderer : IRenderer {
     }
 
     override fun onStart(captureSize: Int) {
-        mRenderColumns = Array(Math.min(36, captureSize),
+        mRenderColumns = Array(Math.min(48, captureSize),
                 { _ -> RectF(0F, -5F, 0F, 5F) })
         mScaleAnimator = NierAnimator()
-        mScaleAnimator.values = floatArrayOf(1F, 1.5F, 1F)
+        mScaleAnimator.values = floatArrayOf(1F, 1.2F, 1F)
         mScaleAnimator.interpolator = BounceInterpolator()
         mRotateAnimator = NierAnimator()
         mRotateAnimator.interpolator = AccelerateDecelerateInterpolator()
@@ -94,8 +94,8 @@ class ColumnarType2Renderer : IRenderer {
 
     override fun render(canvas: Canvas) {
         canvas.save()
-        canvas.rotate(mRotation, canvas.width.toFloat() / 2, canvas.height.toFloat() / 2)
-        canvas.translate(0F, canvas.height.toFloat() / 2)
+        canvas.rotate(mRotation, (mLastDrawArea.left + mLastDrawArea.right) / 2F, (mLastDrawArea.top + mLastDrawArea.bottom) / 2F)
+        canvas.translate(mLastDrawArea.left.toFloat(), (mLastDrawArea.top + mLastDrawArea.bottom) / 2F)
         canvas.scale(mScale, mScale)
         mRenderColumns.forEach {
             canvas.drawRoundRect(it, mRadius, mRadius, mPaint)
