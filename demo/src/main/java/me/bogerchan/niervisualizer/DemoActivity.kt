@@ -18,7 +18,14 @@ import android.view.animation.LinearInterpolator
 import android.widget.TextView
 import me.bogerchan.niervisualizer.renderer.IRenderer
 import me.bogerchan.niervisualizer.renderer.circle.CircleBarRenderer
+import me.bogerchan.niervisualizer.renderer.circle.CircleRenderer
+import me.bogerchan.niervisualizer.renderer.circle.CircleSolidRenderer
 import me.bogerchan.niervisualizer.renderer.circle.CircleWaveRenderer
+import me.bogerchan.niervisualizer.renderer.columnar.ColumnarType1Renderer
+import me.bogerchan.niervisualizer.renderer.columnar.ColumnarType2Renderer
+import me.bogerchan.niervisualizer.renderer.columnar.ColumnarType3Renderer
+import me.bogerchan.niervisualizer.renderer.columnar.ColumnarType4Renderer
+import me.bogerchan.niervisualizer.renderer.line.LineRenderer
 import me.bogerchan.niervisualizer.renderer.other.ArcStaticRenderer
 import me.bogerchan.niervisualizer.util.NierAnimator
 
@@ -36,17 +43,17 @@ class DemoActivity : AppCompatActivity() {
     private var mVisualizerManager: NierVisualizerManager? = null
     private val tvChangeStyle by lazy { findViewById<TextView>(R.id.tv_change_style) }
     private val mRenderers = arrayOf<Array<IRenderer>>(
-//            arrayOf(ColumnarType1Renderer()),
-//            arrayOf(ColumnarType2Renderer()),
-//            arrayOf(ColumnarType3Renderer()),
-//            arrayOf(ColumnarType4Renderer()),
-//            arrayOf(LineRenderer(true)),
-//            arrayOf(CircleBarRenderer()),
-//            arrayOf(CircleRenderer(true)),
-//            arrayOf(CircleRenderer(true),
-//                    CircleBarRenderer(),
-//                    ColumnarType4Renderer()),
-//            arrayOf(CircleRenderer(true), CircleBarRenderer(), LineRenderer(true)),
+            arrayOf(ColumnarType1Renderer()),
+            arrayOf(ColumnarType2Renderer()),
+            arrayOf(ColumnarType3Renderer()),
+            arrayOf(ColumnarType4Renderer()),
+            arrayOf(LineRenderer(true)),
+            arrayOf(CircleBarRenderer()),
+            arrayOf(CircleRenderer(true)),
+            arrayOf(CircleRenderer(true),
+                    CircleBarRenderer(),
+                    ColumnarType4Renderer()),
+            arrayOf(CircleRenderer(true), CircleBarRenderer(), LineRenderer(true)),
             arrayOf(ArcStaticRenderer(
                     paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                         color = Color.parseColor("#cfa9d0fd")
@@ -66,6 +73,11 @@ class DemoActivity : AppCompatActivity() {
                             amplificationInner = 0.8f,
                             startAngle = -45f,
                             sweepAngle = 135f),
+                    CircleSolidRenderer(
+                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                                color = Color.parseColor("#d2eafe")
+                            },
+                            amplification = .45f),
                     CircleBarRenderer(
                             paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                                 strokeWidth = 4f

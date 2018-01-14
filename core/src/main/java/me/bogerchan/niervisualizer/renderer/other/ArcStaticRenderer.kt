@@ -48,8 +48,8 @@ class ArcStaticRenderer(private val paint: Paint = getDefaultPaint(),
             return
         }
         mLastDrawArea.set(drawArea)
-        mCenterX = drawArea.width() / 2F
-        mCenterY = drawArea.height() / 2F
+        mCenterX = (drawArea.left + drawArea.right) / 2F
+        mCenterY = (drawArea.top + drawArea.bottom) / 2F
         mDrawArcInnerRadius = Math.min(drawArea.width(), drawArea.height()) * 0.27F * amplificationInner
         val outerSize = Math.min(drawArea.width(), drawArea.height()) * 0.77F * amplificationOuter
         mDrawArcOuterArea.set(0F, 0F, outerSize, outerSize)

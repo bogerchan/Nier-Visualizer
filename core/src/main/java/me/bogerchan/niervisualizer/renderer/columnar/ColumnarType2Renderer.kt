@@ -94,8 +94,8 @@ class ColumnarType2Renderer : IRenderer {
 
     override fun render(canvas: Canvas) {
         canvas.save()
-        canvas.rotate(mRotation, canvas.width.toFloat() / 2, canvas.height.toFloat() / 2)
-        canvas.translate(0F, canvas.height.toFloat() / 2)
+        canvas.rotate(mRotation, (mLastDrawArea.left + mLastDrawArea.right) / 2F, (mLastDrawArea.top + mLastDrawArea.bottom) / 2F)
+        canvas.translate(mLastDrawArea.left.toFloat(), (mLastDrawArea.top + mLastDrawArea.bottom) / 2F)
         canvas.scale(mScale, mScale)
         mRenderColumns.forEach {
             canvas.drawRoundRect(it, mRadius, mRadius, mPaint)

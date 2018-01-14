@@ -94,8 +94,8 @@ class CircleWaveRenderer(
     override fun render(canvas: Canvas) {
         canvas.save()
         canvas.rotate(animator.computeCurrentValue(),
-                mLastDrawArea.width() / 2f,
-                mLastDrawArea.height() / 2f)
+                (mLastDrawArea.left + mLastDrawArea.right) / 2F,
+                (mLastDrawArea.top + mLastDrawArea.bottom) / 2F)
         canvas.drawLines(mFFTPoints, paint)
         canvas.restore()
     }

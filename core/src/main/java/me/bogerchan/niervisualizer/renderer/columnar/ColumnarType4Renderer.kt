@@ -67,7 +67,7 @@ class ColumnarType4Renderer : IRenderer {
 
     override fun render(canvas: Canvas) {
         canvas.save()
-        canvas.translate(0F, canvas.height.toFloat())
+        canvas.translate(mLastDrawArea.left.toFloat(), (mLastDrawArea.top + mLastDrawArea.bottom) / 2F)
         mRenderColumns.forEach {
             canvas.drawRoundRect(it, mRadius, mRadius, mPaint)
         }
