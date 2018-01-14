@@ -167,7 +167,7 @@ class DemoActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        changeStyle()
+        useStyle(mCurrentStyleIndex)
     }
 
     override fun onStop() {
