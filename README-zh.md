@@ -2,6 +2,11 @@
 
 #### 语言切换: [English](README.md) / [中文](README-zh.md)
 
+# 视觉效果
+<iframe width="853" height="480" src="https://www.youtube.com/embed/uxt-QJpYR3I" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+TODO 国内源
+
 # 1. Nier Visualizer ![](https://jitpack.io/v/bogerchan/Nier-Visualizer.svg)
 
 Nier Visualizer 是一款纯 Kotlin 编写的轻量高效的 Android 可视化库。采用独立渲染线程，兼容绝大部分设备。适用于音频可视化的应用场景，如音乐播放器、录音应用、动态壁纸等。
@@ -40,9 +45,11 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.2'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.3'
 	}
 ```
+
+> 注意：由于 Visualizer 记录声音波形需要权限 `android.permission.RECORD_AUDIO`，请务必在项目中声明它。
 
 ## 3.2 项目实践
 
@@ -77,6 +84,18 @@ visualizerManager.start(surfaceView, arrayOf(ColumnarType1Renderer()))
 visualizerManager.stop()
 ```
 
+### 3.3.5 暂停渲染
+
+``` kotlin
+visualizerManager.pause()
+```
+
+### 3.3.6 恢复渲染
+
+``` kotlin
+visualizerManager.resume()
+```
+
 ## 3.4 Java 接入
 
 ### 3.4.1 初始化框架
@@ -106,6 +125,18 @@ visualizerManager.start(surfaceView, new IRenderer[]{new LineRenderer(true)});
 visualizerManager.stop();
 ```
 
+### 3.4.5 暂停渲染
+
+``` java
+visualizerManager.pause();
+```
+
+### 3.4.6 恢复渲染
+
+``` java
+visualizerManager.resume();
+```
+
 # 4. 后续计划
 
 - 类似 Siri 的可视化效果，构思中...
@@ -119,7 +150,7 @@ visualizerManager.stop();
 # 6. 开放协议
 
 ```
-Copyright 2017 Boger Chan
+Copyright 2018 Boger Chan
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
