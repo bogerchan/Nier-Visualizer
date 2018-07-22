@@ -146,7 +146,7 @@ visualizerManager.resume();
 
 # 5. 致谢
 
-部分效果参考 [android-visualizer](https://github.com/felixpalmer/android-visualizer) ，感谢 `felixpalmer`！
+部分效果参考 [android-visualizer](https://github.com/felixpalmer/android-visualizer)，感谢 `felixpalmer` ！
 
 # 6. 开放协议
 
