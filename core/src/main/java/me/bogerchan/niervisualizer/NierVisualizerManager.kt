@@ -67,8 +67,11 @@ class NierVisualizerManager {
      * Release Nier visualizer instance, you should use it in [android.app.Activity.onDestroy].
      */
     fun release() {
-        stop()
         synchronized(mStateBlock) {
+            renderViewWR = null
+            renderers = null
+            mRenderer.stop()
+            mRenderer.quit()
             mVisualizer?.enabled = false
             mVisualizer?.setDataCaptureListener(null, Visualizer.getMaxCaptureRate(), true, true)
             mVisualizer?.release()
@@ -85,8 +88,8 @@ class NierVisualizerManager {
      */
     fun start(view: SurfaceView, newRenderers: Array<IRenderer>) {
         synchronized(mStateBlock) {
-            val visualizer = mVisualizer ?:
-                    throw IllegalStateException("You must call NierVisualizerManager.init() first!")
+            val visualizer = mVisualizer
+                    ?: throw IllegalStateException("You must call NierVisualizerManager.init() first!")
             if (newRenderers.isEmpty()) {
                 throw IllegalStateException("Renders is empty!")
             }
@@ -104,6 +107,24 @@ class NierVisualizerManager {
             renderViewWR = null
             renderers = null
             mRenderer.stop()
+        }
+    }
+
+    /**
+     * Pause the render work.
+     */
+    fun pause() {
+        synchronized(mStateBlock) {
+            mRenderer.pause()
+        }
+    }
+
+    /**
+     * Resume the render work.
+     */
+    fun resume() {
+        synchronized(mStateBlock) {
+            mRenderer.resume()
         }
     }
 }

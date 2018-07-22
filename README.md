@@ -2,6 +2,12 @@
 
 #### Language Switch: [English](README.md) / [中文](README-zh.md)
 
+# Video Preview
+
+[![Youtube link](https://img.youtube.com/vi/uxt-QJpYR3I/0.jpg)](https://youtu.be/uxt-QJpYR3I)
+
+> Video limit, please click this image.
+
 # 1. Nier Visualizer ![](https://jitpack.io/v/bogerchan/Nier-Visualizer.svg)
 
 Nier Visualizer is a lightweight and efficient Android visual library written in pure Kotlin.It has an independent rendering thread, compatible with most of the equipment on the market. Nier Visualizer is ideal for audio visualization applications such as music players, recorder, live wallpaper and more.
@@ -44,6 +50,8 @@ dependencies {
 	}
 ```
 
+> Tips: The `Visualizer` requires audio permission (`android.permission.RECORD_AUDIO`), please declare it in your project.
+
 ## 3.2 Sample project
 
 Nier Visualizer project provides a `demo` module for reference.
@@ -77,6 +85,18 @@ visualizerManager.start(surfaceView, arrayOf(ColumnarType1Renderer()))
 visualizerManager.stop()
 ```
 
+### 3.3.5 Pause rendering
+
+``` kotlin
+visualizerManager.pause()
+```
+
+### 3.3.6 Resume rendering
+
+``` kotlin
+visualizerManager.resume()
+```
+
 ## 3.4 Use Java
 
 ### 3.4.1 Framework initialization
@@ -106,6 +126,18 @@ visualizerManager.start(surfaceView, new IRenderer[]{new LineRenderer(true)});
 visualizerManager.stop();
 ```
 
+### 3.4.5 Pause rendering
+
+``` java
+visualizerManager.pause();
+```
+
+### 3.4.6 Resume rendering
+
+``` java
+visualizerManager.resume();
+```
+
 # 4. Follow-up plan
 
 - Thinking about implementing visual effects like Siri.
@@ -119,7 +151,7 @@ Ported some of the [android-visualizer](https://github.com/felixpalmer/android-v
 # 6. Protocol
 
 ```
-Copyright 2017 Boger Chan
+Copyright 2018 Boger Chan
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
