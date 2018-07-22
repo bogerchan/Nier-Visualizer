@@ -31,8 +31,7 @@ class NierVisualizerRenderWorker {
         val STATE_START = 1
         val STATE_STOP = 2
         val STATE_PAUSE = 3
-        val STATE_RESUME = 4
-        val STATE_QUIT = 5
+        val STATE_QUIT = 4
     }
 
     class RenderCore(val captureSize: Int, val surfaceView: SurfaceView, val renderers: Array<IRenderer>) {
@@ -190,7 +189,7 @@ class NierVisualizerRenderWorker {
     }
 
     fun resume() {
-        mState.set(STATE_RESUME)
+        mState.set(STATE_START)
         mRenderHandler.apply {
             removeMessages(MSG_RESUME)
             sendEmptyMessage(MSG_RESUME)

@@ -1,21 +1,20 @@
 package me.bogerchan.niervisualizer
 
-import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PixelFormat
+import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.res.ResourcesCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.SurfaceView
-import android.view.View
 import android.view.animation.LinearInterpolator
 import android.widget.TextView
+import android.widget.Toast
 import me.bogerchan.niervisualizer.renderer.IRenderer
 import me.bogerchan.niervisualizer.renderer.circle.CircleBarRenderer
 import me.bogerchan.niervisualizer.renderer.circle.CircleRenderer
@@ -35,13 +34,24 @@ import me.bogerchan.niervisualizer.util.NierAnimator
 class DemoActivity : AppCompatActivity() {
 
     companion object {
-        val REQUEST_CODE_PERMISSION_AUDIO_FOR_INIT = 1
-        val REQUEST_CODE_PERMISSION_AUDIO_FOR_CHANGE_STYLE = 2
+        val REQUEST_CODE_AUDIO_PERMISSION = 1
+        val STATE_PLAYING = 0
+        val STATE_PAUSE = 1
+        val STATE_STOP = 2
     }
 
     private val svWave by lazy { findViewById<SurfaceView>(R.id.sv_wave) }
     private var mVisualizerManager: NierVisualizerManager? = null
     private val tvChangeStyle by lazy { findViewById<TextView>(R.id.tv_change_style) }
+    private val tvStartOrStop by lazy { findViewById<TextView>(R.id.tv_start_or_stop) }
+    private val tvPauseOrResume by lazy { findViewById<TextView>(R.id.tv_pause_or_resume) }
+    private val mPlayer by lazy {
+        MediaPlayer().apply {
+            resources.openRawResourceFd(R.raw.demo_audio).apply {
+                setDataSource(fileDescriptor, startOffset, length)
+            }
+        }
+    }
     private val mRenderers = arrayOf<Array<IRenderer>>(
             arrayOf(ColumnarType1Renderer()),
             arrayOf(ColumnarType2Renderer()),
@@ -121,6 +131,7 @@ class DemoActivity : AppCompatActivity() {
                                     values = floatArrayOf(0f, -360f))))
     )
     private var mCurrentStyleIndex = 0
+    private var mPlayerState = STATE_STOP
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -131,35 +142,75 @@ class DemoActivity : AppCompatActivity() {
         setContentView(R.layout.layout_demo)
         svWave.setZOrderOnTop(true)
         svWave.holder.setFormat(PixelFormat.TRANSLUCENT)
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.RECORD_AUDIO),
-                    REQUEST_CODE_PERMISSION_AUDIO_FOR_INIT)
-        } else {
-            mVisualizerManager = NierVisualizerManager()
-            mVisualizerManager?.init(0)
-        }
         tvChangeStyle.setOnClickListener {
             changeStyle()
+        }
+        tvStartOrStop.setOnClickListener {
+            mPlayer.apply {
+                when (mPlayerState) {
+                    STATE_PLAYING -> {
+                        stop()
+                        mPlayerState = STATE_STOP
+                        mVisualizerManager?.stop()
+                        tvPauseOrResume.isEnabled = false
+                        tvStartOrStop.text = "START"
+                    }
+                    STATE_STOP -> {
+                        prepare()
+                        start()
+                        mPlayerState = STATE_PLAYING
+                        useStyle(mCurrentStyleIndex)
+                        tvPauseOrResume.isEnabled = true
+                        tvStartOrStop.text = "STOP"
+                    }
+                    STATE_PAUSE -> {
+                        stop()
+                        prepare()
+                        start()
+                        mPlayerState = STATE_PLAYING
+                        useStyle(mCurrentStyleIndex)
+                        tvPauseOrResume.isEnabled = true
+                        tvStartOrStop.text = "STOP"
+                    }
+                }
+                tvPauseOrResume.text = "PAUSE"
+            }
+        }
+        tvPauseOrResume.setOnClickListener {
+            mPlayer.apply {
+                when (mPlayerState) {
+                    STATE_PLAYING -> {
+                        pause()
+                        mPlayerState = STATE_PAUSE
+                        mVisualizerManager?.pause()
+                        tvPauseOrResume.text = "RESUME"
+                    }
+                    STATE_PAUSE -> {
+                        start()
+                        mPlayerState = STATE_PLAYING
+                        mVisualizerManager?.resume()
+                        tvPauseOrResume.text = "PAUSE"
+                    }
+                }
+            }
+        }
+        ensurePermissionAllowed()
+    }
+
+    private fun ensurePermissionAllowed() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.RECORD_AUDIO), REQUEST_CODE_AUDIO_PERMISSION)
         }
     }
 
     private fun changeStyle() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.RECORD_AUDIO),
-                    REQUEST_CODE_PERMISSION_AUDIO_FOR_CHANGE_STYLE)
-        } else {
-            useStyle(++mCurrentStyleIndex)
-        }
+        useStyle(++mCurrentStyleIndex)
     }
 
     private fun useStyle(idx: Int) {
         if (mVisualizerManager == null) {
             val nvm = NierVisualizerManager()
-            nvm.init(0)
+            nvm.init(mPlayer.audioSessionId)
             mVisualizerManager = nvm
         }
         mVisualizerManager?.start(svWave, mRenderers[idx % mRenderers.size])
@@ -167,45 +218,30 @@ class DemoActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        useStyle(mCurrentStyleIndex)
+        mVisualizerManager?.apply {
+            if (mPlayer.isPlaying) {
+                resume()
+            }
+        }
     }
 
     override fun onStop() {
         super.onStop()
-        mVisualizerManager?.stop()
+        mVisualizerManager?.pause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         mVisualizerManager?.release()
+        mVisualizerManager = null
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (permissions.isEmpty()) {
-            return
-        }
         when (requestCode) {
-            REQUEST_CODE_PERMISSION_AUDIO_FOR_INIT -> {
+            REQUEST_CODE_AUDIO_PERMISSION -> {
                 if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Snackbar.make(findViewById<View>(android.R.id.content),
-                            "Please enable AUDIO RECORD permission!",
-                            Snackbar.LENGTH_SHORT)
-                            .show()
-                } else {
-                    mVisualizerManager = NierVisualizerManager()
-                    mVisualizerManager?.init(0)
-                    useStyle(++mCurrentStyleIndex)
-                }
-            }
-            REQUEST_CODE_PERMISSION_AUDIO_FOR_CHANGE_STYLE -> {
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Snackbar.make(findViewById<View>(android.R.id.content),
-                            "Please enable AUDIO RECORD permission!",
-                            Snackbar.LENGTH_SHORT)
-                            .show()
-                } else {
-                    useStyle(++mCurrentStyleIndex)
+                    Toast.makeText(this, "Demo need record permission, please allow it to show this visualize effect!", Toast.LENGTH_LONG).show()
+                    finish()
                 }
             }
         }
