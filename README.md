@@ -3,7 +3,10 @@
 #### Language Switch: [English](README.md) / [中文](README-zh.md)
 
 # Video Preview
-<iframe width="853" height="480" src="https://www.youtube.com/embed/uxt-QJpYR3I" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+[![Youtube link](https://img.youtube.com/vi/uxt-QJpYR3I/0.jpg)](https://youtu.be/uxt-QJpYR3I)
+
+> Video limit, please click this image.
 
 # 1. Nier Visualizer ![](https://jitpack.io/v/bogerchan/Nier-Visualizer.svg)
 

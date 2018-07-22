@@ -3,9 +3,10 @@
 #### 语言切换: [English](README.md) / [中文](README-zh.md)
 
 # 视觉效果
-<iframe width="853" height="480" src="https://www.youtube.com/embed/uxt-QJpYR3I" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
-TODO 国内源
+[![Youtube link](https://img.youtube.com/vi/uxt-QJpYR3I/0.jpg)](https://youtu.be/uxt-QJpYR3I)
+
+> 请点击上面图片跳转播放。
 
 # 1. Nier Visualizer ![](https://jitpack.io/v/bogerchan/Nier-Visualizer.svg)
 
