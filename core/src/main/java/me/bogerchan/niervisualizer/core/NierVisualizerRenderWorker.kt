@@ -11,6 +11,8 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import me.bogerchan.niervisualizer.renderer.IRenderer
 import me.bogerchan.niervisualizer.util.FpsHelper
+import me.bogerchan.niervisualizer.util.KeyFrameMaker
+import me.bogerchan.niervisualizer.util.NierThrottle
 import me.bogerchan.niervisualizer.util.clear
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -20,27 +22,24 @@ import java.util.concurrent.atomic.AtomicInteger
 class NierVisualizerRenderWorker {
 
     companion object {
+
         val TAG = NierConstants.tagFor("NierVisualizerRenderWorker")
-        val MSG_RENDER = 0
-        val MSG_START = 1
-        val MSG_STOP = 2
-        val MSG_PAUSE = 3
-        val MSG_RESUME = 4
-        val MSG_UPDATE_FFT = 5
-        val MSG_UPDATE_WAVE = 6
+        const val MSG_RENDER = 0
+        const val MSG_START = 1
+        const val MSG_STOP = 2
+        const val MSG_PAUSE = 3
+        const val MSG_RESUME = 4
+        const val MSG_UPDATE_FFT = 5
+        const val MSG_UPDATE_WAVE = 6
 
-        val STATE_INIT = 0
-        val STATE_START = 1
-        val STATE_STOP = 2
-        val STATE_PAUSE = 3
-        val STATE_QUIT = 4
+        const val STATE_INIT = 0
+        const val STATE_START = 1
+        const val STATE_STOP = 2
+        const val STATE_PAUSE = 3
+        const val STATE_QUIT = 4
     }
 
-    class RenderCore(val captureSize: Int, val surfaceView: SurfaceView, val renderers: Array<IRenderer>) {
-        var fftData: ByteArray = kotlin.ByteArray(captureSize)
-        var waveData: ByteArray = kotlin.ByteArray(captureSize)
-        var waveDataArrived = false
-    }
+    class RenderCore(val captureSize: Int, val surfaceView: SurfaceView, val renderers: Array<IRenderer>)
 
     private val mRenderHandler by lazy {
         val ht = HandlerThread("Nier Render Thread", Process.THREAD_PRIORITY_URGENT_DISPLAY)
@@ -63,7 +62,11 @@ class NierVisualizerRenderWorker {
     private var mState = AtomicInteger(STATE_INIT)
     private val mFpsHelper by lazy { FpsHelper() }
     private val mDrawArea = Rect()
+    private val mKeyFrameMaker = KeyFrameMaker()
     private var mRenderCore: RenderCore? = null
+    private val mFftThrottle = NierThrottle(150)
+    private val mWaveThrottle = NierThrottle(150)
+
 
     private fun processStartEvent(core: RenderCore) {
         if (mState.get() != STATE_START) {
@@ -72,6 +75,7 @@ class NierVisualizerRenderWorker {
         mRenderHandler.apply {
             removeMessages(MSG_RENDER)
             mRenderCore = core.apply {
+                mKeyFrameMaker.prepare(core.captureSize)
                 renderers.forEach { it.onStart(core.captureSize) }
             }
             sendEmptyMessage(MSG_RENDER)
@@ -107,17 +111,11 @@ class NierVisualizerRenderWorker {
     }
 
     private fun processUpdateFftEvent(data: ByteArray) {
-        mRenderCore?.fftData?.apply {
-            System.arraycopy(data, 0, this, 0, data.size)
-
-        }
+        mKeyFrameMaker.updateFftData(data)
     }
 
     private fun processUpdateWaveEvent(data: ByteArray) {
-        mRenderCore?.apply {
-            System.arraycopy(data, 0, waveData, 0, data.size)
-            waveDataArrived = true
-        }
+        mKeyFrameMaker.updateWaveData(data)
     }
 
     private fun processRenderEvent() {
@@ -128,7 +126,7 @@ class NierVisualizerRenderWorker {
             mFpsHelper.start()
             //Make sure just one
             mRenderHandler.removeMessages(MSG_RENDER)
-            renderInternal(this)
+            renderInternal(this, mKeyFrameMaker)
             mFpsHelper.end()
             scheduleNextRender(mFpsHelper.nextDelayTime())
         }
@@ -141,10 +139,11 @@ class NierVisualizerRenderWorker {
         }
     }
 
-    private fun renderInternal(renderCore: RenderCore) {
+    private fun renderInternal(renderCore: RenderCore, frameMaker: KeyFrameMaker) {
         if (mState.get() != STATE_START) {
             return
         }
+        frameMaker.makeKeyFrame()
         renderCore.surfaceView.holder.apply {
             lockCanvas()?.apply {
                 try {
@@ -152,11 +151,11 @@ class NierVisualizerRenderWorker {
                     renderCore.renderers.forEach {
                         when (it.getInputDataType()) {
                             IRenderer.DataType.WAVE -> {
-                                if (renderCore.waveDataArrived) {
-                                    it.calculate(mDrawArea, renderCore.waveData)
-                                }
+                                it.calculate(mDrawArea, frameMaker.computedWaveData)
                             }
-                            IRenderer.DataType.FFT -> it.calculate(mDrawArea, renderCore.fftData)
+                            IRenderer.DataType.FFT -> {
+                                it.calculate(mDrawArea, frameMaker.computedFftData)
+                            }
                         }
                     }
                     clear()
@@ -218,11 +217,17 @@ class NierVisualizerRenderWorker {
         if (mState.get() != STATE_START) {
             return
         }
+        if (!mFftThrottle.process()) {
+            return
+        }
         Message.obtain(mRenderHandler, MSG_UPDATE_FFT, data).sendToTarget()
     }
 
     fun updateWaveData(data: ByteArray) {
         if (mState.get() != STATE_START) {
+            return
+        }
+        if (!mWaveThrottle.process()) {
             return
         }
         Message.obtain(mRenderHandler, MSG_UPDATE_WAVE, data).sendToTarget()
