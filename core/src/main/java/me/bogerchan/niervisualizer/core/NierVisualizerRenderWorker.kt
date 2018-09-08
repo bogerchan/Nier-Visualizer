@@ -170,7 +170,7 @@ class NierVisualizerRenderWorker {
 
     private fun SurfaceHolder.unlockCanvasAndPostSafely(canvas: Canvas) {
         try {
-            if (mState.get() != STATE_START) {
+            if (!surface.isValid) {
                 return
             }
             unlockCanvasAndPost(canvas)
