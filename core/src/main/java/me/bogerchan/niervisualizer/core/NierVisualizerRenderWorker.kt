@@ -1,11 +1,13 @@
 package me.bogerchan.niervisualizer.core
 
+import android.graphics.Canvas
 import android.graphics.Rect
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Message
 import android.os.Process
 import android.util.Log
+import android.view.SurfaceHolder
 import android.view.SurfaceView
 import me.bogerchan.niervisualizer.renderer.IRenderer
 import me.bogerchan.niervisualizer.util.FpsHelper
@@ -18,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger
 class NierVisualizerRenderWorker {
 
     companion object {
-
+        val TAG = NierConstants.tagFor("NierVisualizerRenderWorker")
         val MSG_RENDER = 0
         val MSG_START = 1
         val MSG_STOP = 2
@@ -160,9 +162,20 @@ class NierVisualizerRenderWorker {
                     clear()
                     renderCore.renderers.forEach { it.render(this) }
                 } finally {
-                    unlockCanvasAndPost(this)
+                    unlockCanvasAndPostSafely(this)
                 }
             }
+        }
+    }
+
+    private fun SurfaceHolder.unlockCanvasAndPostSafely(canvas: Canvas) {
+        try {
+            if (mState.get() != STATE_START) {
+                return
+            }
+            unlockCanvasAndPost(canvas)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "unlockCanvasAndPostSafely, illegal state", e)
         }
     }
 
