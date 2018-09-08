@@ -13,6 +13,7 @@ private val clearPaint by lazy {
     paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
     return@lazy paint
 }
+
 fun Canvas.clear() {
     drawPaint(clearPaint)
 }
