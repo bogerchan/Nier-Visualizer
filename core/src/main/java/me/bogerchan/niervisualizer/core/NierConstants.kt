@@ -6,4 +6,8 @@ package me.bogerchan.niervisualizer.core
 
 object NierConstants {
     val TAG = "Nier"
+
+    fun tagFor(id: String): String {
+        return "$TAG.$id"
+    }
 }
