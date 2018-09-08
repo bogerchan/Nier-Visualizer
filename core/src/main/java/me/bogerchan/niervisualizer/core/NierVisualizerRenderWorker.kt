@@ -1,5 +1,6 @@
 package me.bogerchan.niervisualizer.core
 
+import android.graphics.Canvas
 import android.graphics.Rect
 import android.os.Handler
 import android.os.HandlerThread
@@ -11,6 +12,7 @@ import android.view.SurfaceView
 import me.bogerchan.niervisualizer.renderer.IRenderer
 import me.bogerchan.niervisualizer.util.FpsHelper
 import me.bogerchan.niervisualizer.util.KeyFrameMaker
+import me.bogerchan.niervisualizer.util.NierThrottle
 import me.bogerchan.niervisualizer.util.clear
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -62,6 +64,9 @@ class NierVisualizerRenderWorker {
     private val mDrawArea = Rect()
     private val mKeyFrameMaker = KeyFrameMaker()
     private var mRenderCore: RenderCore? = null
+    private val mFftThrottle = NierThrottle(150)
+    private val mWaveThrottle = NierThrottle(150)
+
 
     private fun processStartEvent(core: RenderCore) {
         if (mState.get() != STATE_START) {
@@ -164,7 +169,7 @@ class NierVisualizerRenderWorker {
 
     private fun SurfaceHolder.unlockCanvasAndPostSafely(canvas: Canvas) {
         try {
-            if (mState.get() != STATE_START) {
+            if (!surface.isValid) {
                 return
             }
             unlockCanvasAndPost(canvas)
@@ -212,11 +217,17 @@ class NierVisualizerRenderWorker {
         if (mState.get() != STATE_START) {
             return
         }
+        if (!mFftThrottle.process()) {
+            return
+        }
         Message.obtain(mRenderHandler, MSG_UPDATE_FFT, data).sendToTarget()
     }
 
     fun updateWaveData(data: ByteArray) {
         if (mState.get() != STATE_START) {
+            return
+        }
+        if (!mWaveThrottle.process()) {
             return
         }
         Message.obtain(mRenderHandler, MSG_UPDATE_WAVE, data).sendToTarget()
