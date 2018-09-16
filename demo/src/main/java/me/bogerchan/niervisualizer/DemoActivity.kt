@@ -4,7 +4,10 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PixelFormat
+import android.media.AudioFormat
+import android.media.AudioRecord
 import android.media.MediaPlayer
+import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
@@ -34,23 +37,36 @@ import me.bogerchan.niervisualizer.util.NierAnimator
 class DemoActivity : AppCompatActivity() {
 
     companion object {
-        val REQUEST_CODE_AUDIO_PERMISSION = 1
-        val STATE_PLAYING = 0
-        val STATE_PAUSE = 1
-        val STATE_STOP = 2
+        const val REQUEST_CODE_AUDIO_PERMISSION = 1
+        const val STATE_PLAYING = 0
+        const val STATE_PAUSE = 1
+        const val STATE_STOP = 2
+
+        const val STATUS_UNKNOWN = 0
+        const val STATUS_AUDIO_RECORD = 1
+        const val STATUS_MEDIA_PLAYER = 2
+
+        const val SAMPLING_RATE = 44100
     }
 
     private val svWave by lazy { findViewById<SurfaceView>(R.id.sv_wave) }
     private var mVisualizerManager: NierVisualizerManager? = null
     private val tvChangeStyle by lazy { findViewById<TextView>(R.id.tv_change_style) }
-    private val tvStartOrStop by lazy { findViewById<TextView>(R.id.tv_start_or_stop) }
-    private val tvPauseOrResume by lazy { findViewById<TextView>(R.id.tv_pause_or_resume) }
+    private val tvMediaPlayerStartOrStop by lazy { findViewById<TextView>(R.id.tv_media_player_start_or_stop) }
+    private val tvMediaPlayerPauseOrResume by lazy { findViewById<TextView>(R.id.tv_media_player_pause_or_resume) }
+    private val tvAudioRecordStartOrStop by lazy { findViewById<TextView>(R.id.tv_audio_record_start_or_stop) }
     private val mPlayer by lazy {
         MediaPlayer().apply {
             resources.openRawResourceFd(R.raw.demo_audio).apply {
                 setDataSource(fileDescriptor, startOffset, length)
             }
         }
+    }
+    private val mAudioBufferSize by lazy {
+        AudioRecord.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
+    }
+    private val mAudioRecord by lazy {
+        AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, mAudioBufferSize)
     }
     private val mRenderers = arrayOf<Array<IRenderer>>(
             arrayOf(ColumnarType1Renderer()),
@@ -131,7 +147,9 @@ class DemoActivity : AppCompatActivity() {
                                     values = floatArrayOf(0f, -360f))))
     )
     private var mCurrentStyleIndex = 0
-    private var mPlayerState = STATE_STOP
+    private var mMediaPlayerState = STATE_STOP
+    private var mAudioRecordState = STATE_STOP
+    private var mStatus = STATUS_UNKNOWN
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,54 +163,89 @@ class DemoActivity : AppCompatActivity() {
         tvChangeStyle.setOnClickListener {
             changeStyle()
         }
-        tvStartOrStop.setOnClickListener {
+        tvMediaPlayerStartOrStop.setOnClickListener {
             mPlayer.apply {
-                when (mPlayerState) {
+                when (mMediaPlayerState) {
                     STATE_PLAYING -> {
                         stop()
-                        mPlayerState = STATE_STOP
+                        mMediaPlayerState = STATE_STOP
                         mVisualizerManager?.stop()
-                        tvPauseOrResume.isEnabled = false
-                        tvStartOrStop.text = "START"
+                        tvMediaPlayerPauseOrResume.isEnabled = false
+                        tvMediaPlayerStartOrStop.text = "START"
                     }
                     STATE_STOP -> {
                         prepare()
                         start()
-                        mPlayerState = STATE_PLAYING
+                        mMediaPlayerState = STATE_PLAYING
+                        if (mStatus == STATUS_AUDIO_RECORD || mStatus == STATUS_UNKNOWN) {
+                            mAudioRecord.stop()
+                            tvAudioRecordStartOrStop.text = "START"
+                            mAudioRecordState = STATE_STOP
+                            mStatus = STATUS_MEDIA_PLAYER
+                            createNewVisualizerManager()
+                        }
                         useStyle(mCurrentStyleIndex)
-                        tvPauseOrResume.isEnabled = true
-                        tvStartOrStop.text = "STOP"
+                        tvMediaPlayerPauseOrResume.isEnabled = true
+                        tvMediaPlayerStartOrStop.text = "STOP"
                     }
                     STATE_PAUSE -> {
                         stop()
                         prepare()
                         start()
-                        mPlayerState = STATE_PLAYING
+                        mMediaPlayerState = STATE_PLAYING
                         useStyle(mCurrentStyleIndex)
-                        tvPauseOrResume.isEnabled = true
-                        tvStartOrStop.text = "STOP"
+                        tvMediaPlayerPauseOrResume.isEnabled = true
+                        tvMediaPlayerStartOrStop.text = "STOP"
                     }
                 }
-                tvPauseOrResume.text = "PAUSE"
+                tvMediaPlayerPauseOrResume.text = "PAUSE"
             }
+            mStatus = STATUS_MEDIA_PLAYER
         }
-        tvPauseOrResume.setOnClickListener {
+        tvMediaPlayerPauseOrResume.setOnClickListener {
             mPlayer.apply {
-                when (mPlayerState) {
+                when (mMediaPlayerState) {
                     STATE_PLAYING -> {
                         pause()
-                        mPlayerState = STATE_PAUSE
+                        mMediaPlayerState = STATE_PAUSE
                         mVisualizerManager?.pause()
-                        tvPauseOrResume.text = "RESUME"
+                        tvMediaPlayerPauseOrResume.text = "RESUME"
                     }
                     STATE_PAUSE -> {
                         start()
-                        mPlayerState = STATE_PLAYING
+                        mMediaPlayerState = STATE_PLAYING
                         mVisualizerManager?.resume()
-                        tvPauseOrResume.text = "PAUSE"
+                        tvMediaPlayerPauseOrResume.text = "PAUSE"
                     }
                 }
             }
+        }
+        tvAudioRecordStartOrStop.setOnClickListener {
+            mAudioRecord.apply {
+                when (mAudioRecordState) {
+                    STATE_PLAYING -> {
+                        stop()
+                        mAudioRecordState = STATE_STOP
+                        mVisualizerManager?.stop()
+                        tvAudioRecordStartOrStop.text = "START"
+                    }
+                    STATE_STOP -> {
+                        startRecording()
+                        mAudioRecordState = STATE_PLAYING
+                        if (mStatus == STATUS_MEDIA_PLAYER || mStatus == STATUS_UNKNOWN) {
+                            mPlayer.stop()
+                            tvMediaPlayerStartOrStop.text = "START"
+                            tvMediaPlayerPauseOrResume.isEnabled = false
+                            mMediaPlayerState = STATE_STOP
+                            mStatus = STATUS_AUDIO_RECORD
+                            createNewVisualizerManager()
+                        }
+                        useStyle(mCurrentStyleIndex)
+                        tvAudioRecordStartOrStop.text = "STOP"
+                    }
+                }
+            }
+            mStatus = STATUS_AUDIO_RECORD
         }
         ensurePermissionAllowed()
     }
@@ -208,19 +261,69 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun useStyle(idx: Int) {
-        if (mVisualizerManager == null) {
-            val nvm = NierVisualizerManager()
-            nvm.init(mPlayer.audioSessionId)
-            mVisualizerManager = nvm
-        }
         mVisualizerManager?.start(svWave, mRenderers[idx % mRenderers.size])
+    }
+
+    private fun createNewVisualizerManager() {
+        mVisualizerManager?.release()
+        mVisualizerManager = NierVisualizerManager().apply {
+            when (mStatus) {
+                STATUS_MEDIA_PLAYER -> {
+                    init(mPlayer.audioSessionId)
+                }
+                STATUS_AUDIO_RECORD -> {
+                    init(object : NierVisualizerManager.NVDataSource {
+
+                        private val mBuffer: ByteArray = ByteArray(512)
+                        private val mAudioRecordByteBuffer by lazy { ShortArray(mAudioBufferSize / 2) }
+                        private val audioLength = (mAudioRecordByteBuffer.size * 1000F / SAMPLING_RATE).toInt()
+
+
+                        override fun getDataSamplingInterval() = 0L
+
+                        override fun getDataLength() = mBuffer.size
+
+                        override fun fetchFftData(): ByteArray? {
+                            return null
+                        }
+
+                        override fun fetchWaveData(): ByteArray? {
+                            if (mAudioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+                                return null
+                            }
+                            mAudioRecordByteBuffer.fill(0)
+                            mAudioRecord.read(mAudioRecordByteBuffer, 0, mAudioRecordByteBuffer.size)
+                            var tempCounter = 0
+                            for (idx in 0..(mAudioRecordByteBuffer.size - 1) step (mAudioRecordByteBuffer.size / (audioLength + mBuffer.size))) {
+                                if (tempCounter >= mBuffer.size) {
+                                    break
+                                }
+                                // Suppress noise and use ushr 8
+                                mBuffer[tempCounter++] = (mAudioRecordByteBuffer[idx].toInt() ushr 8).toByte()
+                            }
+                            return mBuffer
+                        }
+
+                    })
+                }
+            }
+        }
     }
 
     override fun onStart() {
         super.onStart()
         mVisualizerManager?.apply {
-            if (mPlayer.isPlaying) {
-                resume()
+            when (mStatus) {
+                STATUS_MEDIA_PLAYER -> {
+                    if (mPlayer.isPlaying) {
+                        resume()
+                    }
+                }
+                STATUS_AUDIO_RECORD -> {
+                    if (mAudioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                        resume()
+                    }
+                }
             }
         }
     }
@@ -234,6 +337,8 @@ class DemoActivity : AppCompatActivity() {
         super.onDestroy()
         mVisualizerManager?.release()
         mVisualizerManager = null
+        mPlayer.release()
+        mAudioRecord.release()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

@@ -210,7 +210,7 @@ class NierVisualizerRenderWorker {
 
     fun quit() {
         mState.set(STATE_QUIT)
-        mRenderHandler.looper.quitSafely()
+        mRenderHandler.looper.quit()
     }
 
     fun updateFftData(data: ByteArray) {
