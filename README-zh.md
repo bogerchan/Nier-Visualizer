@@ -46,7 +46,7 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.4'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.1.0'
 	}
 ```
 
@@ -63,7 +63,7 @@ dependencies {
 ``` kotlin
 val visualizerManager = NierVisualizerManager()
 
-// 传入 audioSession, 0 为 output mix
+// 传入 audioSession, 0 为 output mix, AudioRecord 使用请参考 3.3.7
 visualizerManager.init(0)
 ```
 
@@ -97,6 +97,47 @@ visualizerManager.pause()
 visualizerManager.resume()
 ```
 
+### 3.3.7 初始化框架 (使用外部数据源)
+
+``` kotlin
+val visualizerManager = NierVisualizerManager()
+
+visualizerManager.init(object : NierVisualizerManager.NVDataSource {
+
+                        // 略过无关代码...
+
+                        /**
+                         * 告诉 NierVisualzier 采样的时间间隔, 即间隔多久获取一次数据
+                         * @return 采样数据间隔值，以毫秒为单位
+                         */
+                        override fun getDataSamplingInterval() = 0L
+
+                         /**
+                         * 告诉 NierVisualzier 返回字节数据的大小
+                         * @return fft 和 wave 将返回的数组长度, fft 和 wave 两者数组长度必须保持一致
+                         */
+                        override fun getDataLength() = mBuffer.size
+
+                         /**
+                         * 提供 NierVisualzier 渲染所需要的 fft 数据
+                         * @return fft 数据, 返回 null 则表示不进行 fft 相关数据渲染
+                         */
+                        override fun fetchFftData(): ByteArray? {
+                            return null
+                        }
+
+                        /**
+                         * 提供 NierVisualzier 渲染所需要的 wave 数据
+                         * @return wave 数据, 返回 null 则表示不进行 wave 相关数据渲染
+                         */
+                        override fun fetchWaveData(): ByteArray? {
+                            // 略过无关代码...
+                            return mBuffer
+                        }
+
+                    })
+```
+
 ## 3.4 Java 接入
 
 ### 3.4.1 初始化框架
@@ -104,7 +145,7 @@ visualizerManager.resume()
 ``` java
 NierVisualizerManager visualizerManager = new NierVisualizerManager();
 
-// need a param of audioSession, 0 is output mix
+// 传入 audioSession, 0 为 output mix, AudioRecord 使用请参考 3.4.7
 visualizerManager.init(0);
 ```
 
@@ -136,6 +177,56 @@ visualizerManager.pause();
 
 ``` java
 visualizerManager.resume();
+```
+
+### 3.4.7 初始化框架 (使用外部数据源)
+
+``` java
+NierVisualizerManager visualizerManager = new NierVisualizerManager();
+
+visualizerManager.init(new NierVisualizerManager.NVDataSource() {
+
+    // 略过无关代码...
+
+    /**
+     * 告诉 NierVisualzier 采样的时间间隔, 即间隔多久获取一次数据
+     * @return 采样数据间隔值，以毫秒为单位
+     */
+    @Override
+    public long getDataSamplingInterval() {
+        return 0L;
+    }
+
+    /**
+     * 告诉 NierVisualzier 返回字节数据的大小
+     * @return fft 和 wave 将返回的数组长度, fft 和 wave 两者数组长度必须保持一致
+     */
+    @Override
+    public int getDataLength() {
+        return mBuffer.length;
+    }
+
+    /**
+     * 提供 NierVisualzier 渲染所需要的 fft 数据
+     * @return fft 数据, 返回 null 则表示不进行 fft 相关数据渲染
+     */
+    @Nullable
+    @Override
+    public byte[] fetchFftData() {
+        return null;
+    }
+
+    /**
+     * 提供 NierVisualzier 渲染所需要的 wave 数据
+     * @return wave 数据, 返回 null 则表示不进行 wave 相关数据渲染
+     */
+    @Nullable
+    @Override
+    public byte[] fetchWaveData() {
+        // skip some code...
+        return mBuffer;
+    }
+});
 ```
 
 # 4. 后续计划
