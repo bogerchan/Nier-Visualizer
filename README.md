@@ -46,7 +46,7 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.bogerchan:Nier-Visualizer:v0.0.4'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.1.0'
 	}
 ```
 
@@ -63,7 +63,7 @@ Nier Visualizer project provides a `demo` module for reference.
 ``` kotlin
 val visualizerManager = NierVisualizerManager()
 
-// need a param of audioSession, 0 is output mix
+// need a param of audioSession, 0 is output mix, AudioRecord user please see 3.3.7
 visualizerManager.init(0)
 ```
 
@@ -97,6 +97,47 @@ visualizerManager.pause()
 visualizerManager.resume()
 ```
 
+### 3.3.7 Framework initialization by customized data source
+
+``` kotlin
+val visualizerManager = NierVisualizerManager()
+
+visualizerManager.init(object : NierVisualizerManager.NVDataSource {
+
+                        // skip some code...
+
+                        /**
+                         * Tell the manager about the data sampling interval.
+                         * @return the data sampling interval which is millisecond of unit.
+                         */
+                        override fun getDataSamplingInterval() = 0L
+
+                         /**
+                         * Tell the manager about the data length of fft data or wave data.
+                         * @return the data length of fft data or wave data.
+                         */
+                        override fun getDataLength() = mBuffer.size
+
+                         /**
+                         * The manager will fetch fft data by it.
+                         * @return the fft data, null will be ignored by the manager.
+                         */
+                        override fun fetchFftData(): ByteArray? {
+                            return null
+                        }
+
+                        /**
+                         * The manager will fetch wave data by it.
+                         * @return the wave data, null will be ignored by the manager.
+                         */
+                        override fun fetchWaveData(): ByteArray? {
+                            // skip some code...
+                            return mBuffer
+                        }
+
+                    })
+```
+
 ## 3.4 Use Java
 
 ### 3.4.1 Framework initialization
@@ -104,7 +145,7 @@ visualizerManager.resume()
 ``` java
 NierVisualizerManager visualizerManager = new NierVisualizerManager();
 
-// need a param of audioSession, 0 is output mix
+// need a param of audioSession, 0 is output mix, AudioRecord user please see 3.4.7
 visualizerManager.init(0);
 ```
 
@@ -136,6 +177,56 @@ visualizerManager.pause();
 
 ``` java
 visualizerManager.resume();
+```
+
+### 3.4.7 Framework initialization by customized data source
+
+``` java
+NierVisualizerManager visualizerManager = new NierVisualizerManager();
+
+visualizerManager.init(new NierVisualizerManager.NVDataSource() {
+
+    // skip some code...
+
+    /**
+     * Tell the manager about the data sampling interval.
+     * @return the data sampling interval which is millisecond of unit.
+     */
+    @Override
+    public long getDataSamplingInterval() {
+        return 0L;
+    }
+
+    /**
+     * Tell the manager about the data length of fft data or wave data.
+     * @return the data length of fft data or wave data.
+     */
+    @Override
+    public int getDataLength() {
+        return mBuffer.length;
+    }
+
+    /**
+     * The manager will fetch fft data by it.
+     * @return the fft data, null will be ignored by the manager.
+     */
+    @Nullable
+    @Override
+    public byte[] fetchFftData() {
+        return null;
+    }
+
+    /**
+     * The manager will fetch wave data by it.
+     * @return the wave data, null will be ignored by the manager.
+     */
+    @Nullable
+    @Override
+    public byte[] fetchWaveData() {
+        // skip some code...
+        return mBuffer;
+    }
+});
 ```
 
 # 4. Follow-up plan
