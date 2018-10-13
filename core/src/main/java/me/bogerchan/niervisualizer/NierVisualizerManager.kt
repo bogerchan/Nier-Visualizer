@@ -1,7 +1,9 @@
 package me.bogerchan.niervisualizer
 
 import android.media.audiofx.Visualizer
+import android.util.Log
 import android.view.SurfaceView
+import me.bogerchan.niervisualizer.core.NierConstants
 import me.bogerchan.niervisualizer.core.NierVisualizerRenderWorker
 import me.bogerchan.niervisualizer.core.PeriodWorker
 import me.bogerchan.niervisualizer.renderer.IRenderer
@@ -42,7 +44,11 @@ class NierVisualizerManager {
             mVisualizer = Visualizer(audioSession).apply {
                 enabled = false
                 captureSize = 512
-                scalingMode = Visualizer.SCALING_MODE_NORMALIZED
+                try {
+                    scalingMode = Visualizer.SCALING_MODE_NORMALIZED
+                } catch (e: NoSuchMethodError) {
+                    Log.e(NierConstants.TAG, "Can't set scaling mode", e)
+                }
                 measurementMode = Visualizer.MEASUREMENT_MODE_NONE
                 setDataCaptureListener(object : Visualizer.OnDataCaptureListener {
                     override fun onFftDataCapture(visualizer: Visualizer?, fft: ByteArray?, samplingRate: Int) {
