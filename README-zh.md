@@ -46,7 +46,7 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.bogerchan:Nier-Visualizer:v0.1.1'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.1.2'
 	}
 ```
 
@@ -64,7 +64,10 @@ dependencies {
 val visualizerManager = NierVisualizerManager()
 
 // 传入 audioSession, 0 为 output mix, AudioRecord 使用请参考 3.3.7
-visualizerManager.init(0)
+val state = visualizerManager.init(0)
+if (NierVisualizerManager.SUCCESS != state) {
+   // 可以进行一些错误处理...
+}
 ```
 
 ### 3.3.2 销毁框架实例，释放资源
@@ -146,7 +149,10 @@ visualizerManager.init(object : NierVisualizerManager.NVDataSource {
 NierVisualizerManager visualizerManager = new NierVisualizerManager();
 
 // 传入 audioSession, 0 为 output mix, AudioRecord 使用请参考 3.4.7
-visualizerManager.init(0);
+final int state = visualizerManager.init(0);
+if (NierVisualizerManager.SUCCESS != state) {
+   // 可以进行一些错误处理...
+}
 ```
 
 ### 3.4.2 销毁框架实例，释放资源
