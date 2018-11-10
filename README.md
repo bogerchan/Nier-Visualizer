@@ -46,7 +46,7 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.bogerchan:Nier-Visualizer:v0.1.1'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.1.2'
 	}
 ```
 
@@ -64,7 +64,10 @@ Nier Visualizer project provides a `demo` module for reference.
 val visualizerManager = NierVisualizerManager()
 
 // need a param of audioSession, 0 is output mix, AudioRecord user please see 3.3.7
-visualizerManager.init(0)
+val state = visualizerManager.init(0)
+if (NierVisualizerManager.SUCCESS != state) {
+   // do something...
+}
 ```
 
 ### 3.3.2 Framework release
@@ -143,10 +146,13 @@ visualizerManager.init(object : NierVisualizerManager.NVDataSource {
 ### 3.4.1 Framework initialization
 
 ``` java
-NierVisualizerManager visualizerManager = new NierVisualizerManager();
+final NierVisualizerManager visualizerManager = new NierVisualizerManager();
 
 // need a param of audioSession, 0 is output mix, AudioRecord user please see 3.4.7
-visualizerManager.init(0);
+final int state = visualizerManager.init(0);
+if (NierVisualizerManager.SUCCESS != state) {
+   // do something...
+}
 ```
 
 ### 3.4.2 Framework release

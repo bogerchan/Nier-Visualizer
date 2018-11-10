@@ -20,6 +20,16 @@ class NierVisualizerManager {
         private const val DATA_SOURCE_TYPE_UNKNOWN = -1
         private const val DATA_SOURCE_TYPE_VISUALIZER = 0
         private const val DATA_SOURCE_TYPE_OUTSIDE = 1
+
+        const val SUCCESS = 0
+        const val ERROR = 1
+
+        private const val STATE_UNINITIALIZED = 0
+        private const val STATE_INITIALIZED = 1
+        private const val STATE_START = 2
+        private const val STATE_STOP = 3
+        private const val STATE_PAUSE = 4
+        private const val STATE_RESUME = 5
     }
 
     private var mVisualizer: Visualizer? = null
@@ -33,55 +43,80 @@ class NierVisualizerManager {
     private var mPeriodWorker: PeriodWorker? = null
     private var mDataSourceType: Int = DATA_SOURCE_TYPE_UNKNOWN
     private var mDataCaptureSize: Int = 0
+    private var mState = STATE_UNINITIALIZED
 
 
     /**
      * Initialize Nier visualizer, you should use it in [android.app.Activity.onCreate].
      * @param audioSession system wide unique audio session identifier. see [android.media.audiofx.Visualizer].
+     * @return  [SUCCESS] in case of success.
      */
-    fun init(audioSession: Int) {
+    fun init(audioSession: Int): Int {
         synchronized(mStateBlock) {
-            mVisualizer = Visualizer(audioSession).apply {
-                enabled = false
-                captureSize = 512
-                try {
-                    scalingMode = Visualizer.SCALING_MODE_NORMALIZED
-                } catch (e: NoSuchMethodError) {
-                    Log.e(NierConstants.TAG, "Can't set scaling mode", e)
-                }
-                measurementMode = Visualizer.MEASUREMENT_MODE_NONE
-                setDataCaptureListener(object : Visualizer.OnDataCaptureListener {
-                    override fun onFftDataCapture(visualizer: Visualizer?, fft: ByteArray?, samplingRate: Int) {
-                        val fftBuffer = mFftBuffer ?: return
-                        if (fft == null || fft.size != fftBuffer.size) {
-                            return
-                        }
-                        System.arraycopy(fft, 0, fftBuffer, 0, fft.size)
-                        mRenderer.updateFftData(fftBuffer)
-                    }
-
-                    override fun onWaveFormDataCapture(visualizer: Visualizer?, waveform: ByteArray?, samplingRate: Int) {
-                        val waveBuffer = mWaveBuffer ?: return
-                        if (waveform == null || waveform.size != waveBuffer.size) {
-                            return
-                        }
-                        System.arraycopy(waveform, 0, waveBuffer, 0, waveform.size)
-                        mRenderer.updateWaveData(waveBuffer)
-                    }
-
-                }, Visualizer.getMaxCaptureRate(), true, true)
-            }.apply {
-                mDataCaptureSize = captureSize.apply {
-                    mWaveBuffer = ByteArray(this)
-                    mFftBuffer = ByteArray(this)
-                }
+            if (mState != STATE_UNINITIALIZED) {
+                Log.e(NierConstants.TAG, "Can't initialize library, invalid state: $mState")
+                return ERROR
             }
-            mDataSourceType = DATA_SOURCE_TYPE_VISUALIZER
+            try {
+                mVisualizer = Visualizer(audioSession).apply {
+                    enabled = false
+                    captureSize = 512
+                    try {
+                        scalingMode = Visualizer.SCALING_MODE_NORMALIZED
+                    } catch (e: NoSuchMethodError) {
+                        Log.e(NierConstants.TAG, "Can't set scaling mode", e)
+                    }
+                    measurementMode = Visualizer.MEASUREMENT_MODE_NONE
+                    setDataCaptureListener(object : Visualizer.OnDataCaptureListener {
+                        override fun onFftDataCapture(visualizer: Visualizer?, fft: ByteArray?, samplingRate: Int) {
+                            val fftBuffer = mFftBuffer ?: return
+                            if (fft == null || fft.size != fftBuffer.size) {
+                                return
+                            }
+                            System.arraycopy(fft, 0, fftBuffer, 0, fft.size)
+                            mRenderer.updateFftData(fftBuffer)
+                        }
+
+                        override fun onWaveFormDataCapture(visualizer: Visualizer?, waveform: ByteArray?, samplingRate: Int) {
+                            val waveBuffer = mWaveBuffer ?: return
+                            if (waveform == null || waveform.size != waveBuffer.size) {
+                                return
+                            }
+                            System.arraycopy(waveform, 0, waveBuffer, 0, waveform.size)
+                            mRenderer.updateWaveData(waveBuffer)
+                        }
+
+                    }, Visualizer.getMaxCaptureRate(), true, true)
+                }.apply {
+                    mDataCaptureSize = captureSize.apply {
+                        mWaveBuffer = ByteArray(this)
+                        mFftBuffer = ByteArray(this)
+                    }
+                }
+                mDataSourceType = DATA_SOURCE_TYPE_VISUALIZER
+                mState = STATE_INITIALIZED
+                return SUCCESS
+            } catch (e: IllegalStateException) {
+                mVisualizer = null
+                mWaveBuffer = null
+                mFftBuffer = null
+                Log.e(NierConstants.TAG, "Can't initialize Nier library!", e)
+                return ERROR
+            }
         }
     }
 
-    fun init(dataSource: NVDataSource) {
+    /**
+     * Initialize Nier visualizer, you should use it in [android.app.Activity.onCreate].
+     * @param dataSource a data source provided for fetching sound form data.
+     * @return  [SUCCESS] in case of success.
+     */
+    fun init(dataSource: NVDataSource): Int {
         synchronized(mStateBlock) {
+            if (mState != STATE_UNINITIALIZED) {
+                Log.e(NierConstants.TAG, "Can't initialize library, invalid state: $mState")
+                return ERROR
+            }
             mDataCaptureSize = dataSource.getDataLength().apply {
                 mWaveBuffer = ByteArray(this)
                 mFftBuffer = ByteArray(this)
@@ -107,6 +142,8 @@ class NierVisualizerManager {
                 }
             }
             mDataSourceType = DATA_SOURCE_TYPE_OUTSIDE
+            mState = STATE_INITIALIZED
+            return SUCCESS
         }
     }
 
@@ -115,6 +152,10 @@ class NierVisualizerManager {
      */
     fun release() {
         synchronized(mStateBlock) {
+            if (mState == STATE_UNINITIALIZED) {
+                Log.e(NierConstants.TAG, "Can't release library, invalid state: $mState")
+                return
+            }
             renderViewWR = null
             renderers = null
             mRenderer.stop()
@@ -133,6 +174,7 @@ class NierVisualizerManager {
                     mPeriodWorker = null
                 }
             }
+            mState = STATE_UNINITIALIZED
         }
     }
 
@@ -145,6 +187,10 @@ class NierVisualizerManager {
         synchronized(mStateBlock) {
             if (newRenderers.isEmpty()) {
                 throw IllegalStateException("Renders is empty!")
+            }
+            if (mState == STATE_UNINITIALIZED) {
+                Log.e(NierConstants.TAG, "Can't start to work, invalid state: $mState")
+                return
             }
             when (mDataSourceType) {
                 DATA_SOURCE_TYPE_VISUALIZER -> {
@@ -164,6 +210,7 @@ class NierVisualizerManager {
             renderViewWR = WeakReference(view)
             renderers = newRenderers
             mRenderer.start(NierVisualizerRenderWorker.RenderCore(mDataCaptureSize, view, newRenderers))
+            mState = STATE_START
         }
     }
 
@@ -172,6 +219,10 @@ class NierVisualizerManager {
      */
     fun stop() {
         synchronized(mStateBlock) {
+            if (mState == STATE_UNINITIALIZED) {
+                Log.e(NierConstants.TAG, "Can't stop work, invalid state: $mState")
+                return
+            }
             renderViewWR = null
             renderers = null
             mRenderer.stop()
@@ -185,6 +236,7 @@ class NierVisualizerManager {
                 else -> {
                 }
             }
+            mState = STATE_STOP
         }
     }
 
@@ -193,6 +245,10 @@ class NierVisualizerManager {
      */
     fun pause() {
         synchronized(mStateBlock) {
+            if (mState == STATE_UNINITIALIZED) {
+                Log.e(NierConstants.TAG, "Can't pause work, invalid state: $mState")
+                return
+            }
             mRenderer.pause()
             when (mDataSourceType) {
                 DATA_SOURCE_TYPE_VISUALIZER -> {
@@ -204,6 +260,7 @@ class NierVisualizerManager {
                 else -> {
                 }
             }
+            mState = STATE_PAUSE
         }
     }
 
@@ -212,6 +269,10 @@ class NierVisualizerManager {
      */
     fun resume() {
         synchronized(mStateBlock) {
+            if (mState == STATE_UNINITIALIZED) {
+                Log.e(NierConstants.TAG, "Can't resume work, invalid state: $mState")
+                return
+            }
             mRenderer.resume()
             when (mDataSourceType) {
                 DATA_SOURCE_TYPE_VISUALIZER -> {
@@ -223,6 +284,7 @@ class NierVisualizerManager {
                 else -> {
                 }
             }
+            mState = STATE_RESUME
         }
     }
 
