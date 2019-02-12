@@ -63,10 +63,10 @@ class DemoActivity : AppCompatActivity() {
         }
     }
     private val mAudioBufferSize by lazy {
-        AudioRecord.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
+        AudioRecord.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_8BIT)
     }
     private val mAudioRecord by lazy {
-        AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, mAudioBufferSize)
+        AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_8BIT, mAudioBufferSize)
     }
     private val mRenderers = arrayOf<Array<IRenderer>>(
             arrayOf(ColumnarType1Renderer()),
@@ -275,7 +275,7 @@ class DemoActivity : AppCompatActivity() {
                     init(object : NierVisualizerManager.NVDataSource {
 
                         private val mBuffer: ByteArray = ByteArray(512)
-                        private val mAudioRecordByteBuffer by lazy { ShortArray(mAudioBufferSize / 2) }
+                        private val mAudioRecordByteBuffer by lazy { ByteArray(mAudioBufferSize / 2) }
                         private val audioLength = (mAudioRecordByteBuffer.size * 1000F / SAMPLING_RATE).toInt()
 
 
@@ -298,8 +298,7 @@ class DemoActivity : AppCompatActivity() {
                                 if (tempCounter >= mBuffer.size) {
                                     break
                                 }
-                                // Suppress noise and use ushr 8
-                                mBuffer[tempCounter++] = (mAudioRecordByteBuffer[idx].toInt() ushr 8).toByte()
+                                mBuffer[tempCounter++] = mAudioRecordByteBuffer[idx]
                             }
                             return mBuffer
                         }
