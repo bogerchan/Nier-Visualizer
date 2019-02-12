@@ -137,7 +137,7 @@ class NierVisualizerManager {
                             throw IllegalStateException("NVDataSource must provide correct wave data size as it's getDataLength() says.")
                         }
                         System.arraycopy(this, 0, waveBuffer, 0, size)
-                        mRenderer.updateFftData(waveBuffer)
+                        mRenderer.updateWaveData(waveBuffer)
                     }
                 }
             }

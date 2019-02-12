@@ -56,3 +56,8 @@ freeline/
 freeline_project_description.json
 .idea
 .iml
+
+# Gradle Android Plugin products
+.project
+.settings/
+.classpath
