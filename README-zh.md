@@ -46,7 +46,7 @@ allprojects {
 
 ```
 dependencies {
-		compile 'com.github.bogerchan:Nier-Visualizer:v0.1.2'
+		compile 'com.github.bogerchan:Nier-Visualizer:v0.1.3'
 	}
 ```
 
