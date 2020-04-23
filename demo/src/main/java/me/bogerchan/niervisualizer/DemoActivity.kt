@@ -294,7 +294,7 @@ class DemoActivity : AppCompatActivity() {
                             mAudioRecordByteBuffer.fill(0)
                             mAudioRecord.read(mAudioRecordByteBuffer, 0, mAudioRecordByteBuffer.size)
                             var tempCounter = 0
-                            for (idx in 0..(mAudioRecordByteBuffer.size - 1) step (mAudioRecordByteBuffer.size / (audioLength + mBuffer.size))) {
+                            for (idx in mAudioRecordByteBuffer.indices step (mAudioRecordByteBuffer.size / (audioLength + mBuffer.size))) {
                                 if (tempCounter >= mBuffer.size) {
                                     break
                                 }
