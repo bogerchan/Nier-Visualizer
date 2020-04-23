@@ -18,6 +18,8 @@ import android.view.animation.LinearInterpolator
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
+import me.bogerchan.niervisualizer.converter.AbsAudioDataConverter
+import me.bogerchan.niervisualizer.converter.AudioDataConverterFactory
 import me.bogerchan.niervisualizer.renderer.IRenderer
 import me.bogerchan.niervisualizer.renderer.circle.CircleBarRenderer
 import me.bogerchan.niervisualizer.renderer.circle.CircleRenderer
@@ -63,88 +65,111 @@ class DemoActivity : AppCompatActivity() {
         }
     }
     private val mAudioBufferSize by lazy {
-        AudioRecord.getMinBufferSize(SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_8BIT)
+        AudioRecord.getMinBufferSize(
+            SAMPLING_RATE,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_8BIT
+        )
     }
     private val mAudioRecord by lazy {
-        AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLING_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_8BIT, mAudioBufferSize)
+        AudioRecord(
+            MediaRecorder.AudioSource.MIC,
+            SAMPLING_RATE,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_8BIT,
+            mAudioBufferSize
+        )
     }
     private val mRenderers = arrayOf<Array<IRenderer>>(
-            arrayOf(ColumnarType1Renderer()),
-            arrayOf(ColumnarType2Renderer()),
-            arrayOf(ColumnarType3Renderer()),
-            arrayOf(ColumnarType4Renderer()),
-            arrayOf(LineRenderer(true)),
-            arrayOf(CircleBarRenderer()),
-            arrayOf(CircleRenderer(true)),
-            arrayOf(CircleRenderer(true),
-                    CircleBarRenderer(),
-                    ColumnarType4Renderer()),
-            arrayOf(CircleRenderer(true), CircleBarRenderer(), LineRenderer(true)),
-            arrayOf(ArcStaticRenderer(
-                    paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                        color = Color.parseColor("#cfa9d0fd")
-                    }),
-                    ArcStaticRenderer(
-                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                                color = Color.parseColor("#dad2eafe")
-                            },
-                            amplificationOuter = .83f,
-                            startAngle = -90f,
-                            sweepAngle = 225f),
-                    ArcStaticRenderer(
-                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                                color = Color.parseColor("#7fa9d0fd")
-                            },
-                            amplificationOuter = .93f,
-                            amplificationInner = 0.8f,
-                            startAngle = -45f,
-                            sweepAngle = 135f),
-                    CircleSolidRenderer(
-                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                                color = Color.parseColor("#d2eafe")
-                            },
-                            amplification = .45f),
-                    CircleBarRenderer(
-                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                                strokeWidth = 4f
-                                color = Color.parseColor("#efe3f2ff")
-                            },
-                            modulationStrength = 1f,
-                            type = CircleBarRenderer.Type.TYPE_A_AND_TYPE_B,
-                            amplification = 1f, divisions = 8),
-                    CircleBarRenderer(
-                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                                strokeWidth = 5f
-                                color = Color.parseColor("#e3f2ff")
-                            },
-                            modulationStrength = 0.1f,
-                            amplification = 1.2f,
-                            divisions = 8),
-                    CircleWaveRenderer(
-                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                                strokeWidth = 6f
-                                color = Color.WHITE
-                            },
-                            modulationStrength = 0.2f,
-                            type = CircleWaveRenderer.Type.TYPE_B,
-                            amplification = 1f,
-                            animator = NierAnimator(
-                                    interpolator = LinearInterpolator(),
-                                    duration = 20000,
-                                    values = floatArrayOf(0f, -360f))),
-                    CircleWaveRenderer(
-                            paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                                strokeWidth = 6f
-                                color = Color.parseColor("#7fcee7fe")
-                            },
-                            modulationStrength = 0.2f,
-                            type = CircleWaveRenderer.Type.TYPE_B,
-                            amplification = 1f,
-                            divisions = 8,
-                            animator = NierAnimator(
-                                    interpolator = LinearInterpolator(),
-                                    duration = 20000,
-                                    values = floatArrayOf(0f, -360f))))
+        arrayOf(ColumnarType1Renderer()),
+        arrayOf(ColumnarType2Renderer()),
+        arrayOf(ColumnarType3Renderer()),
+        arrayOf(ColumnarType4Renderer()),
+        arrayOf(LineRenderer(true)),
+        arrayOf(CircleBarRenderer()),
+        arrayOf(CircleRenderer(true)),
+        arrayOf(
+            CircleRenderer(true),
+            CircleBarRenderer(),
+            ColumnarType4Renderer()
+        ),
+        arrayOf(CircleRenderer(true), CircleBarRenderer(), LineRenderer(true)),
+        arrayOf(
+            ArcStaticRenderer(
+                paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.parseColor("#cfa9d0fd")
+                }),
+            ArcStaticRenderer(
+                paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.parseColor("#dad2eafe")
+                },
+                amplificationOuter = .83f,
+                startAngle = -90f,
+                sweepAngle = 225f
+            ),
+            ArcStaticRenderer(
+                paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.parseColor("#7fa9d0fd")
+                },
+                amplificationOuter = .93f,
+                amplificationInner = 0.8f,
+                startAngle = -45f,
+                sweepAngle = 135f
+            ),
+            CircleSolidRenderer(
+                paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    color = Color.parseColor("#d2eafe")
+                },
+                amplification = .45f
+            ),
+            CircleBarRenderer(
+                paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    strokeWidth = 4f
+                    color = Color.parseColor("#efe3f2ff")
+                },
+                modulationStrength = 1f,
+                type = CircleBarRenderer.Type.TYPE_A_AND_TYPE_B,
+                amplification = 1f, divisions = 8
+            ),
+            CircleBarRenderer(
+                paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    strokeWidth = 5f
+                    color = Color.parseColor("#e3f2ff")
+                },
+                modulationStrength = 0.1f,
+                amplification = 1.2f,
+                divisions = 8
+            ),
+            CircleWaveRenderer(
+                paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    strokeWidth = 6f
+                    color = Color.WHITE
+                },
+                modulationStrength = 0.2f,
+                type = CircleWaveRenderer.Type.TYPE_B,
+                amplification = 1f,
+                animator = NierAnimator(
+                    interpolator = LinearInterpolator(),
+                    duration = 20000,
+                    values = floatArrayOf(0f, -360f)
+                )
+            ),
+            CircleWaveRenderer(
+                paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    strokeWidth = 6f
+                    color = Color.parseColor("#7fcee7fe")
+                },
+                modulationStrength = 0.2f,
+                type = CircleWaveRenderer.Type.TYPE_B,
+                amplification = 1f,
+                divisions = 8,
+                animator = NierAnimator(
+                    interpolator = LinearInterpolator(),
+                    duration = 20000,
+                    values = floatArrayOf(0f, -360f)
+                )
+            )
+        )
     )
     private var mCurrentStyleIndex = 0
     private var mMediaPlayerState = STATE_STOP
@@ -154,7 +179,8 @@ class DemoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.navigationBarColor = ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, theme)
+            window.navigationBarColor =
+                ResourcesCompat.getColor(resources, R.color.colorPrimaryDark, theme)
         }
         supportActionBar?.hide()
         setContentView(R.layout.layout_demo)
@@ -251,8 +277,16 @@ class DemoActivity : AppCompatActivity() {
     }
 
     private fun ensurePermissionAllowed() {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.RECORD_AUDIO), REQUEST_CODE_AUDIO_PERMISSION)
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.RECORD_AUDIO
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.RECORD_AUDIO),
+                REQUEST_CODE_AUDIO_PERMISSION
+            )
         }
     }
 
@@ -275,9 +309,8 @@ class DemoActivity : AppCompatActivity() {
                     init(object : NierVisualizerManager.NVDataSource {
 
                         private val mBuffer: ByteArray = ByteArray(512)
-                        private val mAudioRecordByteBuffer by lazy { ByteArray(mAudioBufferSize / 2) }
-                        private val audioLength = (mAudioRecordByteBuffer.size * 1000F / SAMPLING_RATE).toInt()
-
+                        private val mAudioDataConverter: AbsAudioDataConverter =
+                            AudioDataConverterFactory.getConverterByAudioRecord(mAudioRecord)
 
                         override fun getDataSamplingInterval() = 0L
 
@@ -288,18 +321,7 @@ class DemoActivity : AppCompatActivity() {
                         }
 
                         override fun fetchWaveData(): ByteArray? {
-                            if (mAudioRecord.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
-                                return null
-                            }
-                            mAudioRecordByteBuffer.fill(0)
-                            mAudioRecord.read(mAudioRecordByteBuffer, 0, mAudioRecordByteBuffer.size)
-                            var tempCounter = 0
-                            for (idx in mAudioRecordByteBuffer.indices step (mAudioRecordByteBuffer.size / (audioLength + mBuffer.size))) {
-                                if (tempCounter >= mBuffer.size) {
-                                    break
-                                }
-                                mBuffer[tempCounter++] = mAudioRecordByteBuffer[idx]
-                            }
+                            mAudioDataConverter.convertWaveDataTo(mBuffer)
                             return mBuffer
                         }
 
@@ -340,11 +362,19 @@ class DemoActivity : AppCompatActivity() {
         mAudioRecord.release()
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         when (requestCode) {
             REQUEST_CODE_AUDIO_PERMISSION -> {
                 if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "Demo need record permission, please allow it to show this visualize effect!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this,
+                        "Demo need record permission, please allow it to show this visualize effect!",
+                        Toast.LENGTH_LONG
+                    ).show()
                     finish()
                 }
             }
