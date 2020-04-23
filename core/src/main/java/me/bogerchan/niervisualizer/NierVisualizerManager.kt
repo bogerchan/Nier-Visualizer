@@ -36,7 +36,7 @@ class NierVisualizerManager {
     private val mRenderer by lazy { NierVisualizerRenderWorker() }
     private var mWaveBuffer: ByteArray? = null
     private var mFftBuffer: ByteArray? = null
-    private val mStateBlock = Object()
+    private val mStateLocker = Object()
 
     private var renderViewWR: WeakReference<SurfaceView>? = null
     private var renderers: Array<IRenderer>? = null
@@ -52,7 +52,7 @@ class NierVisualizerManager {
      * @return  [SUCCESS] in case of success.
      */
     fun init(audioSession: Int): Int {
-        synchronized(mStateBlock) {
+        synchronized(mStateLocker) {
             if (mState != STATE_UNINITIALIZED) {
                 Log.e(NierConstants.TAG, "Can't initialize library, invalid state: $mState")
                 return ERROR
@@ -112,7 +112,7 @@ class NierVisualizerManager {
      * @return  [SUCCESS] in case of success.
      */
     fun init(dataSource: NVDataSource): Int {
-        synchronized(mStateBlock) {
+        synchronized(mStateLocker) {
             if (mState != STATE_UNINITIALIZED) {
                 Log.e(NierConstants.TAG, "Can't initialize library, invalid state: $mState")
                 return ERROR
@@ -151,7 +151,7 @@ class NierVisualizerManager {
      * Release Nier visualizer instance, you should use it in [android.app.Activity.onDestroy].
      */
     fun release() {
-        synchronized(mStateBlock) {
+        synchronized(mStateLocker) {
             if (mState == STATE_UNINITIALIZED) {
                 Log.e(NierConstants.TAG, "Can't release library, invalid state: $mState")
                 return
@@ -184,7 +184,7 @@ class NierVisualizerManager {
      * @param newRenderers a list of renderer that control the view render work.
      */
     fun start(view: SurfaceView, newRenderers: Array<IRenderer>) {
-        synchronized(mStateBlock) {
+        synchronized(mStateLocker) {
             if (newRenderers.isEmpty()) {
                 throw IllegalStateException("Renders is empty!")
             }
@@ -218,7 +218,7 @@ class NierVisualizerManager {
      * Stop the render work.
      */
     fun stop() {
-        synchronized(mStateBlock) {
+        synchronized(mStateLocker) {
             if (mState == STATE_UNINITIALIZED) {
                 Log.e(NierConstants.TAG, "Can't stop work, invalid state: $mState")
                 return
@@ -244,7 +244,7 @@ class NierVisualizerManager {
      * Pause the render work.
      */
     fun pause() {
-        synchronized(mStateBlock) {
+        synchronized(mStateLocker) {
             if (mState == STATE_UNINITIALIZED) {
                 Log.e(NierConstants.TAG, "Can't pause work, invalid state: $mState")
                 return
@@ -268,7 +268,7 @@ class NierVisualizerManager {
      * Resume the render work.
      */
     fun resume() {
-        synchronized(mStateBlock) {
+        synchronized(mStateLocker) {
             if (mState == STATE_UNINITIALIZED) {
                 Log.e(NierConstants.TAG, "Can't resume work, invalid state: $mState")
                 return
