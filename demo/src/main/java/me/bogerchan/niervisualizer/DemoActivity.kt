@@ -49,6 +49,8 @@ class DemoActivity : AppCompatActivity() {
         const val STATUS_MEDIA_PLAYER = 2
 
         const val SAMPLING_RATE = 44100
+        const val AUDIO_RECORD_CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
+        const val AUDIO_RECORD_FORMAT =  AudioFormat.ENCODING_PCM_16BIT
     }
 
     private val svWave by lazy { findViewById<SurfaceView>(R.id.sv_wave) }
@@ -67,16 +69,16 @@ class DemoActivity : AppCompatActivity() {
     private val mAudioBufferSize by lazy {
         AudioRecord.getMinBufferSize(
             SAMPLING_RATE,
-            AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_8BIT
+            AUDIO_RECORD_CHANNEL_CONFIG,
+            AUDIO_RECORD_FORMAT
         )
     }
     private val mAudioRecord by lazy {
         AudioRecord(
             MediaRecorder.AudioSource.MIC,
             SAMPLING_RATE,
-            AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_8BIT,
+            AUDIO_RECORD_CHANNEL_CONFIG,
+            AUDIO_RECORD_FORMAT,
             mAudioBufferSize
         )
     }
