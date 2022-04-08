@@ -7,10 +7,10 @@ import android.view.animation.DecelerateInterpolator
  */
 class KeyFrameMaker {
 
-    private lateinit var mDestWaveData: ByteArray
-    private lateinit var mDestFftData: ByteArray
-    private lateinit var mPrevWaveData: ByteArray
-    private lateinit var mPrevFftData: ByteArray
+    private var mDestWaveData: ByteArray = ByteArray(DEFAULT_BYTE_SIZE)
+    private var mDestFftData: ByteArray = ByteArray(DEFAULT_BYTE_SIZE)
+    private var mPrevWaveData: ByteArray = ByteArray(DEFAULT_BYTE_SIZE)
+    private var mPrevFftData: ByteArray = ByteArray(DEFAULT_BYTE_SIZE)
     private val mWaveAnimator = NierAnimator(duration = 300, values = floatArrayOf(0F, 1F), interpolator = DecelerateInterpolator(), repeatable = false)
     private val mFftAnimator = NierAnimator(duration = 300, values = floatArrayOf(0F, 1F), interpolator = DecelerateInterpolator(), repeatable = false)
 
@@ -31,16 +31,12 @@ class KeyFrameMaker {
     fun updateWaveData(waveData: ByteArray) {
         System.arraycopy(waveData, 0, mDestWaveData, 0, mDestWaveData.size)
         System.arraycopy(computedWaveData, 0, mPrevWaveData, 0, mPrevWaveData.size)
-//        System.arraycopy(waveData, 0, computedWaveData, 0, computedWaveData.size)
-//        System.arraycopy(waveData, 0, mPrevWaveData, 0, mPrevWaveData.size)
         mWaveAnimator.reset()
     }
 
     fun updateFftData(fftData: ByteArray) {
         System.arraycopy(fftData, 0, mDestFftData, 0, mDestFftData.size)
         System.arraycopy(computedFftData, 0, mPrevFftData, 0, mPrevFftData.size)
-//        System.arraycopy(fftData, 0, computedFftData, 0, computedFftData.size)
-//        System.arraycopy(fftData, 0, mPrevFftData, 0, mPrevFftData.size)
         mFftAnimator.reset()
     }
 
@@ -55,13 +51,20 @@ class KeyFrameMaker {
         val fftFrac = mFftAnimator.computeCurrentValue()
         if (mWaveAnimator.hasValueUpdated) {
             computedWaveData.originMap { idx, _ ->
-                (((mDestWaveData[idx].toInt() and 0xFF) - (mPrevWaveData[idx].toInt() and 0xFF)) * waveFrac + (mPrevWaveData[idx].toInt() and 0xFF)).toByte()
+                (((mDestWaveData[idx].toInt() and 0xFF) -
+                    (mPrevWaveData[idx].toInt() and 0xFF)) * waveFrac + (mPrevWaveData[idx].toInt() and 0xFF)
+                ).toInt().toByte()
             }
         }
         if (mFftAnimator.hasValueUpdated) {
             computedFftData.originMap { idx, _ ->
-                ((mDestFftData[idx] - mPrevFftData[idx]) * fftFrac + mPrevFftData[idx]).toByte()
+                ((mDestFftData[idx] - mPrevFftData[idx]) * fftFrac + mPrevFftData[idx]).toInt()
+                    .toByte()
             }
         }
+    }
+
+    companion object {
+        private const val DEFAULT_BYTE_SIZE = 0
     }
 }
