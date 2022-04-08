@@ -14,8 +14,8 @@ class KeyFrameMaker {
     private val mWaveAnimator = NierAnimator(duration = 300, values = floatArrayOf(0F, 1F), interpolator = DecelerateInterpolator(), repeatable = false)
     private val mFftAnimator = NierAnimator(duration = 300, values = floatArrayOf(0F, 1F), interpolator = DecelerateInterpolator(), repeatable = false)
 
-    lateinit var computedWaveData: ByteArray
-    lateinit var computedFftData: ByteArray
+    var computedWaveData: ByteArray = ByteArray(DEFAULT_BYTE_SIZE)
+    var computedFftData: ByteArray = ByteArray(DEFAULT_BYTE_SIZE)
 
     fun prepare(captureSize: Int) {
         mWaveAnimator.start()
